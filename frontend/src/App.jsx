@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import NebulaBackground from "./components/NebulaBackground";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
@@ -8,7 +8,6 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/HomePage";
-import Product from "./components/Product"
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
@@ -42,6 +41,7 @@ const RedirectAuthenticatedUser = ({ children }) => {
 
 function App() {
   const { isCheckingAuth, checkAuth } = useAuthStore();
+  const location = useLocation();
 
   useEffect(() => {
     checkAuth();
@@ -59,7 +59,6 @@ function App() {
       <div className="relative z-10 w-full min-h-screen">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/product" element={<Product/>}/>
 
           {/* Todas las demás rutas se renderizan dentro de un contenedor centrado */}
           <Route path="*" element={
@@ -112,7 +111,7 @@ function App() {
           } />
         </Routes>
       </div>
-      <Footer/>
+      {!location.pathname.startsWith("/dashboard") && <Footer />}
       <Toaster />
     </div>
   );
