@@ -8,6 +8,7 @@ import { authContent } from "../constants";
 import Sidebar from "../components/Sidebar";
 import CategoryManager from "../components/CategoryManager";
 import ProductManager from "../components/ProductManager";
+import PurchaseManager from "../components/PurchaseManager";
 
 const DashboardPage = () => {
   const { user, logout } = useAuthStore();
@@ -23,6 +24,7 @@ const DashboardPage = () => {
       <main className={`transition-all duration-300 w-full pt-10 min-h-screen border-t-0 ${isOpen ? 'pl-64' : 'pl-20'}`}>
         {activeTab === "categories" && <CategoryManager />}
         {activeTab === "products" && <ProductManager />}
+        {activeTab === "purchases" && <PurchaseManager />}
       </main>
     </>
   );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { 
-  Menu, Moon, Sun, ChevronLeft, Search, Home, 
-  TrendingUp, Store, ChevronDown, ClipboardCheck, Archive, 
+import {
+  Menu, Moon, Sun, ChevronLeft, Search, Home,
+  TrendingUp, Store, ChevronDown, ClipboardCheck, Archive,
   Bell, Settings, LogOut, Image as ImageIcon, Mic
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -16,7 +16,7 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
   };
 
   return (
-    <nav 
+    <nav
       className={`fixed top-0 left-0 h-screen transition-all duration-300 ease-in-out z-50 flex flex-col justify-between 
         ${isDarkMode ? 'bg-[#0f0f13]/90 backdrop-blur-xl text-gray-300 border-r border-white/10' : 'bg-white/90 backdrop-blur-xl text-gray-800 border-r border-gray-200'}
         ${isOpen ? 'w-64' : 'w-20'}
@@ -28,14 +28,14 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
         {/* Header */}
         <header className="flex items-center justify-between p-4 h-20 border-b border-transparent">
           {isOpen && (
-             <div className="flex items-center gap-3 overflow-hidden text-orange-500">
-               <div className="font-bold text-2xl tracking-wide whitespace-nowrap overflow-hidden">
-                  CastillaDev
-               </div>
-             </div>
+            <div className="flex items-center gap-3 overflow-hidden text-orange-500">
+              <div className="font-bold text-2xl tracking-wide whitespace-nowrap overflow-hidden">
+                CastillaWeb
+              </div>
+            </div>
           )}
-          <button 
-            onClick={() => setIsOpen(!isOpen)} 
+          <button
+            onClick={() => setIsOpen(!isOpen)}
             className={`p-2 rounded-lg transition-colors shrink-0 ${isDarkMode ? 'hover:bg-white/10 text-white' : 'hover:bg-gray-100 text-black'}`}
             aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
@@ -45,14 +45,14 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
 
         {/* Menu Container */}
         <div className="p-4 flex-1 overflow-y-auto overflow-x-hidden remove-scrollbar">
-          
+
           {/* Search */}
           <div className={`flex items-center gap-3 rounded-xl p-2.5 mb-6 transition-all ${isDarkMode ? 'bg-black/50 border border-white/5 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
             <Search size={20} className="shrink-0 opacity-70" />
             {isOpen && (
-              <input 
-                type="text" 
-                placeholder="Buscar..." 
+              <input
+                type="text"
+                placeholder="Buscar..."
                 className="bg-transparent border-none outline-none w-full text-sm text-current placeholder:text-current placeholder:opacity-50"
               />
             )}
@@ -77,9 +77,9 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
 
             {/* Tienda */}
             <li>
-              <button 
+              <button
                 onClick={() => {
-                  if(!isOpen) setIsOpen(true);
+                  if (!isOpen) setIsOpen(true);
                   toggleDropdown('tienda');
                 }}
                 className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
@@ -95,7 +95,7 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
               {isOpen && openDropdowns['tienda'] && (
                 <ul className="mt-2 ml-4 pl-4 border-l border-white/10 space-y-2">
                   <li>
-                    <button 
+                    <button
                       onClick={() => setActiveTab("products")}
                       className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'products' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
                     >
@@ -103,11 +103,19 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
                     </button>
                   </li>
                   <li>
-                    <button 
+                    <button
                       onClick={() => setActiveTab("categories")}
                       className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'categories' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
                     >
                       Categorías
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => setActiveTab("purchases")}
+                      className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'purchases' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
+                    >
+                      Compras (Entradas)
                     </button>
                   </li>
                   <li><a href="#" className="block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors">Punto de Venta</a></li>
@@ -125,9 +133,9 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
 
             {/* Carpetas */}
             <li>
-              <button 
+              <button
                 onClick={() => {
-                  if(!isOpen) setIsOpen(true);
+                  if (!isOpen) setIsOpen(true);
                   toggleDropdown('carpetas');
                 }}
                 className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
@@ -137,12 +145,12 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
                   {isOpen && <span className="font-medium whitespace-nowrap">Carpetas</span>}
                 </div>
                 {isOpen && (
-                   <ChevronDown size={16} className={`transition-transform duration-300 ${openDropdowns['carpetas'] ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={16} className={`transition-transform duration-300 ${openDropdowns['carpetas'] ? 'rotate-180' : ''}`} />
                 )}
               </button>
               {isOpen && openDropdowns['carpetas'] && (
                 <ul className="mt-2 ml-4 pl-4 border-l border-white/10 space-y-2">
-                  <li><a href="#" className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors"><ImageIcon size={16}/> Imagenes</a></li>
+                  <li><a href="#" className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors"><ImageIcon size={16} /> Imagenes</a></li>
                   <li><a href="#" className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors"><Mic size={16} /> Audio</a></li>
                 </ul>
               )}
@@ -162,20 +170,20 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
             <li>
               <a href="#" className={`flex items-center justify-between p-3 rounded-xl transition-colors ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}>
                 <div className="flex items-center gap-3">
-                   <Settings size={22} className="shrink-0" />
-                   {isOpen && <span className="font-medium whitespace-nowrap">Configuraciones</span>}
+                  <Settings size={22} className="shrink-0" />
+                  {isOpen && <span className="font-medium whitespace-nowrap">Configuraciones</span>}
                 </div>
               </a>
             </li>
             {/* Dark mode toggle */}
-             <li>
-              <button 
+            <li>
+              <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
               >
                 <div className="flex items-center gap-3">
-                   {isDarkMode ? <Sun size={22} className="shrink-0" /> : <Moon size={22} className="shrink-0" />}
-                   {isOpen && <span className="font-medium whitespace-nowrap">{isDarkMode ? 'Modo Claro' : 'Modo Oscuro'}</span>}
+                  {isDarkMode ? <Sun size={22} className="shrink-0" /> : <Moon size={22} className="shrink-0" />}
+                  {isOpen && <span className="font-medium whitespace-nowrap">{isDarkMode ? 'Modo Claro' : 'Modo Oscuro'}</span>}
                 </div>
               </button>
             </li>
@@ -184,25 +192,25 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
           {/* User Profile */}
           <div className={`flex items-center justify-between p-3 mt-2 rounded-xl transition-all ${isDarkMode ? 'bg-black/50 border border-white/5' : 'bg-gray-100'}`}>
             <div className="flex items-center gap-3 overflow-hidden">
-               <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center text-white shrink-0 font-bold uppercase shadow-lg shadow-orange-500/20">
-                  {user?.name?.charAt(0) || 'U'}
-               </div>
-               {isOpen && (
-                  <div className="flex flex-col overflow-hidden">
-                    <span className="font-medium text-sm truncate">{user?.name || 'User'}</span>
-                    <span className="text-xs opacity-70 truncate">{user?.email || 'user@gmail.com'}</span>
-                  </div>
-               )}
+              <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center text-white shrink-0 font-bold uppercase shadow-lg shadow-orange-500/20">
+                {user?.name?.charAt(0) || 'U'}
+              </div>
+              {isOpen && (
+                <div className="flex flex-col overflow-hidden">
+                  <span className="font-medium text-sm truncate">{user?.name || 'User'}</span>
+                  <span className="text-xs opacity-70 truncate">{user?.email || 'user@gmail.com'}</span>
+                </div>
+              )}
             </div>
             {isOpen && (
-               <button onClick={logout} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors shrink-0" aria-label="Cerrar sesión">
-                  <LogOut size={20} />
-               </button>
+              <button onClick={logout} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors shrink-0" aria-label="Cerrar sesión">
+                <LogOut size={20} />
+              </button>
             )}
           </div>
         </footer>
       </div>
-      
+
       {/* Required css for hiding scrollbar visually but keeping scrollability */}
       <style>{`
         .remove-scrollbar::-webkit-scrollbar {

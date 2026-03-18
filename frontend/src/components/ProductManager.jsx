@@ -55,12 +55,19 @@ const ProductManager = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formattedData = {
+      ...formData,
+      price: Number(formData.price),
+      stock: Number(formData.stock)
+    };
+
     try {
       if (editingId) {
-        await updateProduct(editingId, formData);
+        await updateProduct(editingId, formattedData);
         toast.success("Producto actualizado");
       } else {
-        await createProduct(formData);
+        await createProduct(formattedData);
         toast.success("Producto creado");
       }
       setIsFormOpen(false);
