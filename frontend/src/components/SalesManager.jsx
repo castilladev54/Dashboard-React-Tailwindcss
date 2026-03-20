@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, X, Check, ShoppingCart, Trash2, Search, ArrowLeft } from "lucide-react";
+import { Plus, X, Check, ShoppingCart, Trash2, Search, ArrowLeft, RefreshCw } from "lucide-react";
 import { useSaleStore } from "../store/saleStore";
 import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
+import { useCurrencyStore } from "../store/currencyStore";
 import toast from "react-hot-toast";
 
 const SalesManager = () => {
   const { sales, isLoading, error, fetchSales, createSale, fetchSaleById } = useSaleStore();
   const { products, fetchProducts } = useProductStore();
   const { user } = useAuthStore();
+  const { exchangeRate, setExchangeRate, toBs } = useCurrencyStore();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [viewedSale, setViewedSale] = useState(null);
@@ -19,14 +21,22 @@ const SalesManager = () => {
   
   // Para la búsqueda de productos
   const [searchTerm, setSearchTerm] = useState("");
+  // Editar tasa
+  const [editingRate, setEditingRate] = useState(false);
+  const [tempRate, setTempRate] = useState(exchangeRate);
 
   useEffect(() => {
     fetchSales();
     fetchProducts();
   }, [fetchSales, fetchProducts]);
 
+  const handleSaveRate = () => {
+    setExchangeRate(tempRate);
+    setEditingRate(false);
+    toast.success(`Tasa actualizada: 1 USD = ${tempRate} Bs`);
+  };
+
   const handleAddItem = (product) => {
-    // Verificar stock
     if (product.stock <= 0) {
       toast.error(`El producto ${product.name} no tiene stock disponible`);
       return;
@@ -88,7 +98,6 @@ const SalesManager = () => {
       setIsFormOpen(false);
       setItems([]);
       setPaymentMethod("Efectivo");
-      // Opcional: recargar productos para actualizar stock
       fetchProducts();
     } catch (err) {
       toast.error(error || "Ocurrió un error al registrar la venta");
@@ -112,27 +121,72 @@ const SalesManager = () => {
 
   const currentTotal = items.reduce((acc, item) => acc + (item.quantity * item.unit_price), 0);
 
-  // Filtrar productos para búsqueda
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-         <h2 className="text-3xl font-bold text-white tracking-wide">
-           Punto de <span className="text-orange-500">Venta</span>
-         </h2>
+      {/* Header con tasa cambiaria */}
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-bold text-white tracking-wide">
+            Punto de <span className="text-orange-500">Venta</span>
+          </h2>
 
-         {!isFormOpen && !viewedSale && (
-           <button
-             onClick={() => setIsFormOpen(true)}
-             className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-lg shadow-orange-500/20 font-medium"
-           >
-             <Plus size={20} />
-             Nueva Venta
-           </button>
-         )}
+          {!isFormOpen && !viewedSale && (
+            <button
+              onClick={() => setIsFormOpen(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-lg shadow-orange-500/20 font-medium"
+            >
+              <Plus size={20} />
+              Nueva Venta
+            </button>
+          )}
+        </div>
+
+        {/* Barra de tasa cambiaria */}
+        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500/10 to-green-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
+          <RefreshCw size={18} className="text-blue-400 shrink-0" />
+          <span className="text-sm text-gray-300 whitespace-nowrap">Tasa del Día:</span>
+          {editingRate ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">1 USD =</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={tempRate}
+                onChange={(e) => setTempRate(e.target.value)}
+                className="w-28 bg-black/50 border border-white/20 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:border-blue-500 transition"
+                autoFocus
+              />
+              <span className="text-sm text-gray-400">Bs</span>
+              <button
+                onClick={handleSaveRate}
+                className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => { setEditingRate(false); setTempRate(exchangeRate); }}
+                className="px-3 py-1 bg-white/10 hover:bg-white/20 text-gray-300 text-sm rounded-lg transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-blue-400">1 USD = {exchangeRate} Bs</span>
+              <button
+                onClick={() => { setEditingRate(true); setTempRate(exchangeRate); }}
+                className="px-2 py-1 text-xs bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition"
+              >
+                Editar
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* FORMULARIO DE NUEVA VENTA */}
@@ -150,7 +204,7 @@ const SalesManager = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-            {/* Buscador de productos listados */}
+            {/* Buscador de productos */}
             <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex flex-col h-[500px]">
               <div className="relative mb-4">
                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -174,8 +228,9 @@ const SalesManager = () => {
                       <h4 className="text-white font-medium">{product.name}</h4>
                       <p className="text-xs text-gray-400">Stock: {product.stock}</p>
                     </div>
-                    <div className="text-orange-400 font-bold">
-                      ${Number(product.price).toFixed(2)}
+                    <div className="text-right">
+                      <div className="text-orange-400 font-bold">${Number(product.price).toFixed(2)}</div>
+                      <div className="text-xs text-blue-400">Bs {toBs(product.price).toFixed(2)}</div>
                     </div>
                   </div>
                 ))}
@@ -198,7 +253,10 @@ const SalesManager = () => {
                       <div key={index} className="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/5">
                         <div className="flex-1">
                           <h5 className="text-white font-medium text-sm">{item.name}</h5>
-                          <div className="text-amber-500 font-bold text-sm">${item.unit_price.toFixed(2)}</div>
+                          <div className="flex gap-3">
+                            <span className="text-amber-500 font-bold text-sm">${item.unit_price.toFixed(2)}</span>
+                            <span className="text-blue-400 text-xs leading-5">Bs {toBs(item.unit_price).toFixed(2)}</span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <input 
@@ -232,13 +290,21 @@ const SalesManager = () => {
                       required
                     >
                       <option value="Efectivo">Efectivo</option>
+                      <option value="Efectivo Bs">Efectivo Bolívares</option>
                       <option value="Tarjeta">Tarjeta (Crédito/Débito)</option>
                       <option value="Transferencia">Transferencia Bancaria</option>
+                      <option value="Pago Movil">Pago Móvil</option>
                     </select>
                   </div>
-                  <div className="flex justify-between items-end">
-                    <span className="text-gray-400">Total a Cobrar:</span>
-                    <div className="text-3xl font-bold text-amber-500">${currentTotal.toFixed(2)}</div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-end">
+                      <span className="text-gray-400">Total USD:</span>
+                      <div className="text-3xl font-bold text-amber-500">${currentTotal.toFixed(2)}</div>
+                    </div>
+                    <div className="flex justify-between items-end">
+                      <span className="text-gray-400">Total Bs:</span>
+                      <div className="text-2xl font-bold text-blue-400">Bs {toBs(currentTotal).toFixed(2)}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -295,16 +361,16 @@ const SalesManager = () => {
                  {new Date(viewedSale.createdAt).toLocaleString()}
                </p>
             </div>
-            <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Estado</p>
-               <span className="inline-block px-2 py-1 mt-1 text-xs font-semibold rounded bg-green-500/10 text-green-400 border border-green-500/20">
-                 {viewedSale.status || 'Completada'}
-               </span>
-            </div>
             <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
-               <p className="text-xs text-amber-500/70 uppercase tracking-wider mb-1">Total Monto</p>
+               <p className="text-xs text-amber-500/70 uppercase tracking-wider mb-1">Total USD</p>
                <p className="text-2xl font-bold text-amber-500">
                  ${Number(viewedSale.total_amount || 0).toFixed(2)}
+               </p>
+            </div>
+            <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
+               <p className="text-xs text-blue-500/70 uppercase tracking-wider mb-1">Total Bs</p>
+               <p className="text-2xl font-bold text-blue-400">
+                 Bs {toBs(Number(viewedSale.total_amount || 0)).toFixed(2)}
                </p>
             </div>
           </div>
@@ -316,34 +382,28 @@ const SalesManager = () => {
                  <tr className="border-b border-white/5 bg-black/30 text-gray-400 text-sm uppercase tracking-wider">
                    <th className="px-6 py-3 font-medium">Producto</th>
                    <th className="px-6 py-3 font-medium">Cantidad</th>
-                   <th className="px-6 py-3 font-medium">Precio Unitario</th>
+                   <th className="px-6 py-3 font-medium">Precio USD</th>
+                   <th className="px-6 py-3 font-medium">Precio Bs</th>
                    <th className="px-6 py-3 font-medium">Subtotal</th>
                  </tr>
                </thead>
                <tbody className="divide-y divide-white/5">
-                 {/* Si los items vienen expandidos o no */}
                  {viewedSale.items?.map((item, idx) => (
                    <tr key={idx} className="hover:bg-white/5 transition-colors">
                      <td className="px-6 py-3 text-white">
                        <span className="font-medium text-orange-400">{item.product_id?.name || 'Producto Desconocido'}</span>
-                       <div className="text-xs text-gray-500 mt-1">ID: {item.product_id?._id || item.product_id}</div>
                      </td>
                      <td className="px-6 py-3 text-gray-300">
                        {item.quantity} unidades
                      </td>
                      <td className="px-6 py-3 text-gray-300">${Number(item.unit_price).toFixed(2)}</td>
-                     <td className="px-6 py-3 text-amber-500 font-medium">
-                       ${(Number(item.quantity) * Number(item.unit_price)).toFixed(2)}
+                     <td className="px-6 py-3 text-blue-400">Bs {toBs(Number(item.unit_price)).toFixed(2)}</td>
+                     <td className="px-6 py-3">
+                       <div className="text-amber-500 font-medium">${(item.quantity * Number(item.unit_price)).toFixed(2)}</div>
+                       <div className="text-xs text-blue-400">Bs {toBs(item.quantity * Number(item.unit_price)).toFixed(2)}</div>
                      </td>
                    </tr>
                  ))}
-                 {!viewedSale.items && (
-                   <tr>
-                     <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                       Los detalles de los artículos no están disponibles en esta vista (verifica el populate).
-                     </td>
-                   </tr>
-                 )}
                </tbody>
             </table>
           </div>
@@ -380,7 +440,8 @@ const SalesManager = () => {
                      <th className="px-6 py-4 font-medium">Fecha</th>
                      <th className="px-6 py-4 font-medium">Método Pago</th>
                      <th className="px-6 py-4 font-medium">Estado</th>
-                     <th className="px-6 py-4 font-medium">Total</th>
+                     <th className="px-6 py-4 font-medium">Total USD</th>
+                     <th className="px-6 py-4 font-medium">Total Bs</th>
                      <th className="px-6 py-4 font-medium text-right">Acciones</th>
                    </tr>
                  </thead>
@@ -409,6 +470,9 @@ const SalesManager = () => {
                        </td>
                        <td className="px-6 py-4 text-amber-500 font-medium">
                          ${Number(sale.total_amount || 0).toFixed(2)}
+                       </td>
+                       <td className="px-6 py-4 text-blue-400 font-medium">
+                         Bs {toBs(Number(sale.total_amount || 0)).toFixed(2)}
                        </td>
                        <td className="px-6 py-4 text-right">
                          <button

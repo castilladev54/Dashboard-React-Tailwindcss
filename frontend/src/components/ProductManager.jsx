@@ -3,11 +3,13 @@ import { motion } from "framer-motion";
 import { Plus, Edit2, Trash2, X, Check, PackageOpen } from "lucide-react";
 import { useProductStore } from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore";
+import { useCurrencyStore } from "../store/currencyStore";
 import toast from "react-hot-toast";
 
 const ProductManager = () => {
   const { products, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
+  const { exchangeRate, toBs } = useCurrencyStore();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -247,7 +249,8 @@ const ProductManager = () => {
                 <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-sm uppercase tracking-wider">
                   <th className="px-6 py-4 font-medium">Producto</th>
                   <th className="px-6 py-4 font-medium">Categoría</th>
-                  <th className="px-6 py-4 font-medium">Precio</th>
+                  <th className="px-6 py-4 font-medium">Precio USD</th>
+                  <th className="px-6 py-4 font-medium">Precio Bs</th>
                   <th className="px-6 py-4 font-medium">Stock</th>
                   <th className="px-6 py-4 font-medium text-right">Acciones</th>
                 </tr>
@@ -272,6 +275,9 @@ const ProductManager = () => {
                     </td>
                     <td className="px-6 py-4 text-amber-500 font-medium">
                        ${Number(prod.price).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-blue-400 font-medium">
+                       Bs {toBs(prod.price).toFixed(2)}
                     </td>
                     <td className="px-6 py-4">
                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${prod.stock > 10 ? 'bg-green-500/10 text-green-400 border border-green-500/20' : prod.stock > 0 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
