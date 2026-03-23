@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/purchases" : "/api/purchases";
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/purchases" : "https://backend-inventory-system-mbhd8anur-castillawebs-projects.vercel.app/api/purchases";
 
 axios.defaults.withCredentials = true;
 
