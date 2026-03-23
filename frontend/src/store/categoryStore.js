@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/categories" : "https://backend-inventory-system-mbhd8anur-castillawebs-projects.vercel.app/api/categories";
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api/categories" : "https://backend-inventory-system.vercel.app/api/categories";
 
 axios.defaults.withCredentials = true;
 
@@ -25,9 +25,9 @@ export const useCategoryStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(API_URL, categoryData);
-      set((state) => ({ 
+      set((state) => ({
         categories: [...state.categories, response.data.category || response.data],
-        isLoading: false 
+        isLoading: false
       }));
       return response.data;
     } catch (error) {
@@ -41,7 +41,7 @@ export const useCategoryStore = create((set) => ({
     try {
       const response = await axios.put(`${API_URL}/${id}`, categoryData);
       set((state) => ({
-        categories: state.categories.map((cat) => 
+        categories: state.categories.map((cat) =>
           cat._id === id ? response.data.category || response.data : cat
         ),
         isLoading: false
