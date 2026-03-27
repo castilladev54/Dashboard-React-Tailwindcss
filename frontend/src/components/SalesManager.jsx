@@ -5,6 +5,7 @@ import { useSaleStore } from "../store/saleStore";
 import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
 import { useCurrencyStore } from "../store/currencyStore";
+import Button from "./Button";
 import toast from "react-hot-toast";
 
 const SalesManager = () => {
@@ -135,13 +136,10 @@ const SalesManager = () => {
           </h2>
 
           {!isFormOpen && !viewedSale && (
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-lg shadow-orange-500/20 font-medium"
-            >
+            <Button variant="primary" onClick={() => setIsFormOpen(true)}>
               <Plus size={20} />
               Nueva Venta
-            </button>
+            </Button>
           )}
         </div>
 
@@ -162,28 +160,19 @@ const SalesManager = () => {
                 autoFocus
               />
               <span className="text-sm text-gray-400">Bs</span>
-              <button
-                onClick={handleSaveRate}
-                className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition"
-              >
+              <Button variant="primary" size="sm" onClick={handleSaveRate}>
                 Guardar
-              </button>
-              <button
-                onClick={() => { setEditingRate(false); setTempRate(exchangeRate); }}
-                className="px-3 py-1 bg-white/10 hover:bg-white/20 text-gray-300 text-sm rounded-lg transition"
-              >
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setEditingRate(false); setTempRate(exchangeRate); }}>
                 Cancelar
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-blue-400">1 USD = {exchangeRate} Bs</span>
-              <button
-                onClick={() => { setEditingRate(true); setTempRate(exchangeRate); }}
-                className="px-2 py-1 text-xs bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg transition"
-              >
+              <Button variant="ghost" size="sm" onClick={() => { setEditingRate(true); setTempRate(exchangeRate); }} className="text-gray-300">
                 Editar
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -198,9 +187,9 @@ const SalesManager = () => {
         >
           <div className="flex justify-between items-center mb-6 relative z-10">
             <h3 className="text-xl font-bold text-white">Registrar Nueva Venta</h3>
-            <button onClick={cancelForm} className="text-gray-400 hover:text-white transition">
+            <Button variant="ghost" onClick={cancelForm}>
                <X size={24} />
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
@@ -268,13 +257,9 @@ const SalesManager = () => {
                             onChange={(e) => handleQuantityChange(index, e.target.value)}
                             className="w-20 bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-center text-white focus:outline-none focus:border-orange-500 transition"
                           />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveItem(index)}
-                            className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                          >
+                          <Button variant="icon" type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:bg-red-500/10">
                             <Trash2 size={18} />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))
@@ -311,20 +296,12 @@ const SalesManager = () => {
               </div>
 
               <div className="flex gap-3 mt-auto">
-                <button
-                  type="button"
-                  onClick={cancelForm}
-                  className="w-1/3 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition font-medium"
-                >
+                <Button variant="secondary" type="button" onClick={cancelForm} className="w-1/3 py-3">
                   Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading || items.length === 0}
-                  className="w-2/3 flex justify-center items-center gap-2 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition shadow-lg shadow-orange-500/20 font-medium disabled:opacity-50"
-                >
+                </Button>
+                <Button variant="primary" type="submit" disabled={isLoading || items.length === 0} className="w-2/3 py-3">
                   {isLoading ? "Procesando..." : <><Check size={20} /> Procesar Venta</>}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -339,13 +316,10 @@ const SalesManager = () => {
            className="mb-8 p-6 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl"
         >
           <div className="flex items-center justify-between mb-6">
-            <button
-               onClick={() => setViewedSale(null)}
-               className="flex items-center gap-2 text-orange-500 hover:text-orange-400 transition"
-            >
+            <Button variant="ghost" onClick={() => setViewedSale(null)} className="text-orange-500 hover:text-orange-400">
                <ArrowLeft size={20} />
                <span>Volver a Ventas</span>
-            </button>
+            </Button>
             <div className="text-sm text-gray-400">
                ID Venta: {viewedSale._id}
             </div>
@@ -476,12 +450,9 @@ const SalesManager = () => {
                          Bs {toBs(Number(sale.total_amount || 0)).toFixed(2)}
                        </td>
                        <td className="px-6 py-4 text-right">
-                         <button
-                           onClick={() => handleViewDetail(sale._id)}
-                           className="px-3 py-1.5 text-sm bg-white/5 hover:bg-white/10 text-orange-400 rounded-lg transition-colors inline-block"
-                         >
-                           Ver Detalles
-                         </button>
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(sale._id)} className="bg-white/5 hover:bg-white/10 text-orange-400">
+                            Ver Detalles
+                          </Button>
                        </td>
                      </motion.tr>
                    ))}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Edit2, Trash2, X, Check } from "lucide-react";
 import { useCategoryStore } from "../store/categoryStore";
+import Button from "./Button";
 import toast from "react-hot-toast";
 
 const CategoryManager = () => {
@@ -70,13 +71,10 @@ const CategoryManager = () => {
         </h2>
         
         {!isFormOpen && (
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-lg shadow-orange-500/20 font-medium"
-          >
+          <Button variant="primary" onClick={() => setIsFormOpen(true)}>
             <Plus size={20} />
             Nueva Categoría
-          </button>
+          </Button>
         )}
       </div>
 
@@ -92,9 +90,9 @@ const CategoryManager = () => {
             <h3 className="text-xl font-bold text-white">
               {editingId ? "Editar Categoría" : "Agregar Nueva Categoría"}
             </h3>
-            <button onClick={cancelEdit} className="text-gray-400 hover:text-white transition">
+            <Button variant="ghost" onClick={cancelEdit}>
                <X size={24} />
-            </button>
+            </Button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
@@ -125,20 +123,12 @@ const CategoryManager = () => {
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <button 
-                type="button" 
-                onClick={cancelEdit}
-                className="px-6 py-2.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition font-medium"
-              >
+              <Button variant="secondary" type="button" onClick={cancelEdit}>
                 Cancelar
-              </button>
-              <button 
-                type="submit" 
-                disabled={isLoading}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition shadow-lg shadow-orange-500/20 font-medium disabled:opacity-50"
-              >
-                {isLoading ? "Guardando..." : <><Check size={18} /> {editingId ? "Actualizar" : "Guardar"}</>}
-              </button>
+              </Button>
+              <Button variant="primary" type="submit" isLoading={isLoading}>
+                <Check size={18} /> {editingId ? "Actualizar" : "Guardar"}
+              </Button>
             </div>
           </form>
         </motion.div>
@@ -164,13 +154,10 @@ const CategoryManager = () => {
              </div>
              <h3 className="text-xl font-bold text-white mb-2">No hay categorías</h3>
              <p className="text-gray-400 mb-6">Aún no has agregado ninguna categoría a tu inventario.</p>
-             <button
-               onClick={() => setIsFormOpen(true)}
-               className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-500 border border-orange-500/20 px-4 py-2 rounded-xl hover:bg-orange-500/20 transition font-medium"
-             >
-               <Plus size={18} />
-               Agregar mi primera categoría
-             </button>
+             <Button variant="outline" onClick={() => setIsFormOpen(true)}>
+                <Plus size={18} />
+                Agregar mi primera categoría
+              </Button>
            </div>
         ) : (
           <div className="overflow-x-auto">
@@ -200,20 +187,12 @@ const CategoryManager = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => handleEdit(cat)}
-                          className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                          title="Editar"
-                        >
+                        <Button variant="icon" onClick={() => handleEdit(cat)} title="Editar" className="text-blue-400 hover:bg-blue-500/10">
                           <Edit2 size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(cat._id)}
-                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Eliminar"
-                        >
+                        </Button>
+                        <Button variant="icon" onClick={() => handleDelete(cat._id)} title="Eliminar" className="text-red-400 hover:bg-red-500/10">
                           <Trash2 size={18} />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>

@@ -4,6 +4,7 @@ import { Plus, X, Check, PackageOpen, Trash2, Search, ArrowLeft } from "lucide-r
 import { usePurchaseStore } from "../store/purchaseStore";
 import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
+import Button from "./Button";
 import toast from "react-hot-toast";
 
 const PurchaseManager = () => {
@@ -103,13 +104,10 @@ const PurchaseManager = () => {
         </h2>
 
         {!isFormOpen && !viewedPurchase && (
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-xl hover:from-orange-600 hover:to-amber-600 transition shadow-lg shadow-orange-500/20 font-medium"
-          >
+          <Button variant="primary" onClick={() => setIsFormOpen(true)}>
             <Plus size={20} />
             Nueva Entrada
-          </button>
+          </Button>
         )}
       </div>
 
@@ -122,9 +120,9 @@ const PurchaseManager = () => {
         >
           <div className="flex justify-between items-center mb-6 relative z-10">
             <h3 className="text-xl font-bold text-white">Registrar Nueva Compra / Entrada</h3>
-            <button onClick={cancelForm} className="text-gray-400 hover:text-white transition">
+            <Button variant="ghost" onClick={cancelForm}>
               <X size={24} />
-            </button>
+            </Button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
@@ -143,13 +141,9 @@ const PurchaseManager = () => {
             <div className="border border-white/5 bg-black/20 rounded-xl p-4">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-lg font-medium text-white">Artículos</h4>
-                <button
-                  type="button"
-                  onClick={handleAddItem}
-                  className="flex items-center gap-1 text-orange-400 hover:text-orange-300 text-sm transition"
-                >
+                <Button variant="ghost" size="sm" type="button" onClick={handleAddItem} className="text-orange-400 hover:text-orange-300">
                   <Plus size={16} /> Añadir Artículo
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-3">
@@ -204,14 +198,9 @@ const PurchaseManager = () => {
                     </div>
 
                     {items.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(index)}
-                        className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mb-0.5"
-                        title="Eliminar artículo"
-                      >
+                      <Button variant="icon" type="button" onClick={() => handleRemoveItem(index)} title="Eliminar artículo" className="text-red-400 hover:bg-red-500/10 mb-0.5">
                         <Trash2 size={20} />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
@@ -226,20 +215,12 @@ const PurchaseManager = () => {
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-              <button
-                type="button"
-                onClick={cancelForm}
-                className="px-6 py-2.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition font-medium"
-              >
+              <Button variant="secondary" type="button" onClick={cancelForm}>
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition shadow-lg shadow-orange-500/20 font-medium disabled:opacity-50"
-              >
-                {isLoading ? "Registrando..." : <><Check size={18} /> Registrar Compra</>}
-              </button>
+              </Button>
+              <Button variant="primary" type="submit" isLoading={isLoading}>
+                <Check size={18} /> Registrar Compra
+              </Button>
             </div>
           </form>
         </motion.div>
@@ -253,13 +234,10 @@ const PurchaseManager = () => {
           className="mb-8 p-6 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl"
         >
           <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={() => setViewedPurchase(null)}
-              className="flex items-center gap-2 text-orange-500 hover:text-orange-400 transition"
-            >
+            <Button variant="ghost" onClick={() => setViewedPurchase(null)} className="text-orange-500 hover:text-orange-400">
               <ArrowLeft size={20} />
               <span>Volver al historial</span>
-            </button>
+            </Button>
             <div className="text-sm text-gray-400">
               ID Compra: {viewedPurchase._id}
             </div>
@@ -380,12 +358,9 @@ const PurchaseManager = () => {
                         ${Number(purchase.total_cost || 0).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleViewDetail(purchase._id)}
-                          className="px-3 py-1.5 text-sm bg-white/5 hover:bg-white/10 text-orange-400 rounded-lg transition-colors inline-block"
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(purchase._id)} className="bg-white/5 hover:bg-white/10 text-orange-400">
                           Ver Detalles
-                        </button>
+                        </Button>
                       </td>
                     </motion.tr>
                   ))}
