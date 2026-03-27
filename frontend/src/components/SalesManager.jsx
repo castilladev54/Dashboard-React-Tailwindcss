@@ -19,7 +19,7 @@ const SalesManager = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
   const [items, setItems] = useState([]);
-  
+
   // Para la búsqueda de productos
   const [searchTerm, setSearchTerm] = useState("");
   // Editar tasa
@@ -67,7 +67,7 @@ const SalesManager = () => {
   const handleQuantityChange = (index, value) => {
     const qty = parseFloat(value);
     if (value !== "" && (isNaN(qty) || qty < 0)) return;
-    
+
     const newItems = [...items];
     if (qty > newItems[index].maxStock) {
       toast.error(`La cantidad no puede exceder el stock disponible (${newItems[index].maxStock})`);
@@ -124,7 +124,7 @@ const SalesManager = () => {
 
   const currentTotal = items.reduce((acc, item) => acc + ((parseFloat(item.quantity) || 0) * item.unit_price), 0);
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -222,14 +222,14 @@ const SalesManager = () => {
       {/* FORMULARIO DE NUEVA VENTA */}
       {isFormOpen && (
         <motion.div
-           initial={{ opacity: 0, height: 0, scale: 0.95 }}
-           animate={{ opacity: 1, height: "auto", scale: 1 }}
-           className="mb-8 p-6 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl relative overflow-hidden"
+          initial={{ opacity: 0, height: 0, scale: 0.95 }}
+          animate={{ opacity: 1, height: "auto", scale: 1 }}
+          className="mb-8 p-6 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl relative overflow-hidden"
         >
           <div className="flex justify-between items-center mb-6 relative z-10">
             <h3 className="text-xl font-bold text-white">Registrar Nueva Venta</h3>
             <Button variant="ghost" onClick={cancelForm}>
-               <X size={24} />
+              <X size={24} />
             </Button>
           </div>
 
@@ -237,19 +237,19 @@ const SalesManager = () => {
             {/* Buscador de productos */}
             <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex flex-col h-[500px]">
               <div className="relative mb-4">
-                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                 <input
-                   type="text"
-                   placeholder="Buscar producto..."
-                   value={searchTerm}
-                   onChange={(e) => setSearchTerm(e.target.value)}
-                   className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
-                 />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Buscar producto..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
+                />
               </div>
               <div className="flex-1 overflow-y-auto pr-2 space-y-2">
                 {filteredProducts.map(product => (
-                  <div 
-                    key={product._id} 
+                  <div
+                    key={product._id}
                     className={`flex justify-between items-center p-3 rounded-lg border border-white/5 transition
                       ${product.stock > 0 ? 'bg-white/5 hover:bg-white/10 cursor-pointer' : 'bg-red-500/5 opacity-50 cursor-not-allowed'}`}
                     onClick={() => handleAddItem(product)}
@@ -271,7 +271,7 @@ const SalesManager = () => {
             <form onSubmit={handleSubmit} className="flex flex-col h-[500px]">
               <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex-1 flex flex-col mb-4">
                 <h4 className="text-lg font-medium text-white mb-4">Carrito de Compra</h4>
-                
+
                 <div className="flex-1 overflow-y-auto space-y-2 mb-4">
                   {items.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-500">
@@ -289,8 +289,8 @@ const SalesManager = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             min="0.01"
                             step="0.01"
                             max={item.maxStock}
@@ -352,75 +352,75 @@ const SalesManager = () => {
       {/* VISTA DETALLE DE VENTA */}
       {viewedSale && !isFormOpen && (
         <motion.div
-           initial={{ opacity: 0, scale: 0.95 }}
-           animate={{ opacity: 1, scale: 1 }}
-           className="mb-8 p-6 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-8 p-6 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl"
         >
           <div className="flex items-center justify-between mb-6">
             <Button variant="ghost" onClick={() => setViewedSale(null)} className="text-orange-500 hover:text-orange-400">
-               <ArrowLeft size={20} />
-               <span>Volver a Ventas</span>
+              <ArrowLeft size={20} />
+              <span>Volver a Ventas</span>
             </Button>
             <div className="text-sm text-gray-400">
-               ID Venta: {viewedSale._id}
+              ID Venta: {viewedSale._id}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Método de Pago</p>
-               <p className="text-lg font-medium text-white">{viewedSale.payment_method}</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Método de Pago</p>
+              <p className="text-lg font-medium text-white">{viewedSale.payment_method}</p>
             </div>
             <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Fecha</p>
-               <p className="text-lg font-medium text-white">
-                 {new Date(viewedSale.createdAt).toLocaleString()}
-               </p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Fecha</p>
+              <p className="text-lg font-medium text-white">
+                {new Date(viewedSale.createdAt).toLocaleString()}
+              </p>
             </div>
             <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
-               <p className="text-xs text-amber-500/70 uppercase tracking-wider mb-1">Total USD</p>
-               <p className="text-2xl font-bold text-amber-500">
-                 ${Number(viewedSale.total_amount || 0).toFixed(2)}
-               </p>
+              <p className="text-xs text-amber-500/70 uppercase tracking-wider mb-1">Total USD</p>
+              <p className="text-2xl font-bold text-amber-500">
+                ${Number(viewedSale.total_amount || 0).toFixed(2)}
+              </p>
             </div>
             <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
-               <p className="text-xs text-blue-500/70 uppercase tracking-wider mb-1">Total Bs</p>
-               <p className="text-2xl font-bold text-blue-400">
-                 Bs {toBs(Number(viewedSale.total_amount || 0)).toFixed(2)}
-               </p>
+              <p className="text-xs text-blue-500/70 uppercase tracking-wider mb-1">Total Bs</p>
+              <p className="text-2xl font-bold text-blue-400">
+                Bs {toBs(Number(viewedSale.total_amount || 0)).toFixed(2)}
+              </p>
             </div>
           </div>
 
           <h4 className="text-lg font-medium text-white mb-4">Artículos Vendidos</h4>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-               <thead>
-                 <tr className="border-b border-white/5 bg-black/30 text-gray-400 text-sm uppercase tracking-wider">
-                   <th className="px-6 py-3 font-medium">Producto</th>
-                   <th className="px-6 py-3 font-medium">Cantidad</th>
-                   <th className="px-6 py-3 font-medium">Precio USD</th>
-                   <th className="px-6 py-3 font-medium">Precio Bs</th>
-                   <th className="px-6 py-3 font-medium">Subtotal</th>
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-white/5">
-                 {viewedSale.items?.map((item, idx) => (
-                   <tr key={idx} className="hover:bg-white/5 transition-colors">
-                     <td className="px-6 py-3 text-white">
-                       <span className="font-medium text-orange-400">{item.product_id?.name || 'Producto Desconocido'}</span>
-                     </td>
-                     <td className="px-6 py-3 text-gray-300">
-                       {item.quantity} {item.product_id?.unit_type && item.product_id?.unit_type !== "unidad" ? item.product_id.unit_type : (item.quantity === 1 ? 'unidad' : 'unidades')}
-                     </td>
-                     <td className="px-6 py-3 text-gray-300">${Number(item.unit_price).toFixed(2)}</td>
-                     <td className="px-6 py-3 text-blue-400">Bs {toBs(Number(item.unit_price)).toFixed(2)}</td>
-                     <td className="px-6 py-3">
-                       <div className="text-amber-500 font-medium">${(parseFloat(item.quantity) * Number(item.unit_price)).toFixed(2)}</div>
-                       <div className="text-xs text-blue-400">Bs {toBs(parseFloat(item.quantity) * Number(item.unit_price)).toFixed(2)}</div>
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
+              <thead>
+                <tr className="border-b border-white/5 bg-black/30 text-gray-400 text-sm uppercase tracking-wider">
+                  <th className="px-6 py-3 font-medium">Producto</th>
+                  <th className="px-6 py-3 font-medium">Cantidad</th>
+                  <th className="px-6 py-3 font-medium">Precio USD</th>
+                  <th className="px-6 py-3 font-medium">Precio Bs</th>
+                  <th className="px-6 py-3 font-medium">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {viewedSale.items?.map((item, idx) => (
+                  <tr key={idx} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-3 text-white">
+                      <span className="font-medium text-orange-400">{item.product_id?.name || 'Producto Desconocido'}</span>
+                    </td>
+                    <td className="px-6 py-3 text-gray-300">
+                      {item.quantity} {item.product_id?.unit_type && item.product_id?.unit_type !== "unidad" ? item.product_id.unit_type : (item.quantity === 1 ? 'unidad' : 'unidades')}
+                    </td>
+                    <td className="px-6 py-3 text-gray-300">${Number(item.unit_price).toFixed(2)}</td>
+                    <td className="px-6 py-3 text-blue-400">Bs {toBs(Number(item.unit_price)).toFixed(2)}</td>
+                    <td className="px-6 py-3">
+                      <div className="text-amber-500 font-medium">${(parseFloat(item.quantity) * Number(item.unit_price)).toFixed(2)}</div>
+                      <div className="text-xs text-blue-400">Bs {toBs(parseFloat(item.quantity) * Number(item.unit_price)).toFixed(2)}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         </motion.div>
@@ -429,115 +429,115 @@ const SalesManager = () => {
       {/* ERROR HANDLER */}
       {error && !isFormOpen && !viewedSale && (
         <div className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-           {error}
+          {error}
         </div>
       )}
 
       {/* HISTORIAL LIST */}
       {!isFormOpen && !viewedSale && (
         <>
-        {/* Barra de filtros por fecha */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <nav className="flex items-center gap-2 flex-wrap" aria-label="Filtro por período">
-            <Calendar size={18} className="text-gray-400 shrink-0" />
-            {dateFilterOptions.map(opt => (
-              <Button
-                key={opt.value}
-                variant={dateFilter === opt.value ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setDateFilter(opt.value)}
-              >
-                {opt.label}
-              </Button>
-            ))}
-          </nav>
-          {dateFilter !== 'all' && (
-            <div className="flex items-center gap-4 bg-gradient-to-r from-amber-500/10 to-blue-500/10 border border-amber-500/20 rounded-xl px-4 py-2">
-              <div className="text-right">
-                <p className="text-xs text-gray-400">Total filtrado</p>
-                <span className="text-lg font-bold text-amber-500">${filteredTotal.toFixed(2)}</span>
-                <span className="text-sm text-blue-400 ml-2">Bs {toBs(filteredTotal).toFixed(2)}</span>
+          {/* Barra de filtros por fecha */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <nav className="flex items-center gap-2 flex-wrap" aria-label="Filtro por período">
+              <Calendar size={18} className="text-gray-400 shrink-0" />
+              {dateFilterOptions.map(opt => (
+                <Button
+                  key={opt.value}
+                  variant={dateFilter === opt.value ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setDateFilter(opt.value)}
+                >
+                  {opt.label}
+                </Button>
+              ))}
+            </nav>
+            {dateFilter !== 'all' && (
+              <div className="flex items-center gap-4 bg-gradient-to-r from-amber-500/10 to-blue-500/10 border border-amber-500/20 rounded-xl px-4 py-2">
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Total filtrado</p>
+                  <span className="text-lg font-bold text-amber-500">${filteredTotal.toFixed(2)}</span>
+                  <span className="text-sm text-blue-400 ml-2">Bs {toBs(filteredTotal).toFixed(2)}</span>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="bg-[#1a1a24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-          {isLoading ? (
-             <div className="p-8 text-center text-gray-400">
-               Cargando historial de ventas...
-             </div>
-          ) : filteredSales.length === 0 ? (
-             <div className="p-12 text-center">
-               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-gray-400 mb-4">
-                 <ShoppingCart size={30} />
-               </div>
-               <h3 className="text-xl font-bold text-white mb-2">
-                 {sales.length === 0 ? 'Aún no hay ventas' : 'Sin ventas en este período'}
-               </h3>
-               <p className="text-gray-400 mb-6">
-                 {sales.length === 0 ? 'El historial de ventas está vacío.' : 'No se encontraron ventas con el filtro seleccionado.'}
-               </p>
-               {sales.length > 0 && (
-                 <Button variant="outline" size="sm" onClick={() => setDateFilter('all')}>
-                   Ver todas las ventas
-                 </Button>
-               )}
-             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                 <thead>
-                   <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-sm uppercase tracking-wider">
-                     <th className="px-6 py-4 font-medium">Fecha</th>
-                     <th className="px-6 py-4 font-medium">Método Pago</th>
-                     <th className="px-6 py-4 font-medium">Estado</th>
-                     <th className="px-6 py-4 font-medium">Total USD</th>
-                     <th className="px-6 py-4 font-medium">Total Bs</th>
-                     <th className="px-6 py-4 font-medium text-right">Acciones</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-white/5">
-                   {filteredSales.map((sale, index) => (
-                     <motion.tr
-                       initial={{ opacity: 0, y: 10 }}
-                       animate={{ opacity: 1, y: 0 }}
-                       transition={{ delay: index * 0.05 }}
-                       key={sale._id}
-                       className="hover:bg-white/5 transition-colors group"
-                     >
-                       <td className="px-6 py-4 text-gray-300">
-                         {new Date(sale.createdAt).toLocaleDateString()}
-                         <div className="text-xs text-gray-500 mt-0.5">
-                           {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                         </div>
-                       </td>
-                       <td className="px-6 py-4 text-white font-medium">
-                         {sale.payment_method}
-                       </td>
-                       <td className="px-6 py-4">
-                         <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-semibold">
-                           {sale.status || 'Completada'}
-                         </span>
-                       </td>
-                       <td className="px-6 py-4 text-amber-500 font-medium">
-                         ${Number(sale.total_amount || 0).toFixed(2)}
-                       </td>
-                       <td className="px-6 py-4 text-blue-400 font-medium">
-                         Bs {toBs(Number(sale.total_amount || 0)).toFixed(2)}
-                       </td>
-                       <td className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(sale._id)} className="bg-white/5 hover:bg-white/10 text-orange-400">
+          <div className="bg-[#1a1a24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+            {isLoading ? (
+              <div className="p-8 text-center text-gray-400">
+                Cargando historial de ventas...
+              </div>
+            ) : filteredSales.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-gray-400 mb-4">
+                  <ShoppingCart size={30} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {sales.length === 0 ? 'Aún no hay ventas' : 'Sin ventas en este período'}
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  {sales.length === 0 ? 'El historial de ventas está vacío.' : 'No se encontraron ventas con el filtro seleccionado.'}
+                </p>
+                {sales.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setDateFilter('all')}>
+                    Ver todas las ventas
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-sm uppercase tracking-wider">
+                      <th className="px-6 py-4 font-medium">Fecha</th>
+                      <th className="px-6 py-4 font-medium">Método Pago</th>
+                      <th className="px-6 py-4 font-medium">Estado</th>
+                      <th className="px-6 py-4 font-medium">Total USD</th>
+                      <th className="px-6 py-4 font-medium">Total Bs</th>
+                      <th className="px-6 py-4 font-medium text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filteredSales.map((sale, index) => (
+                      <motion.tr
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        key={sale._id}
+                        className="hover:bg-white/5 transition-colors group"
+                      >
+                        <td className="px-6 py-4 text-gray-300">
+                          {new Date(sale.createdAt).toLocaleDateString()}
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-white font-medium">
+                          {sale.payment_method}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-semibold">
+                            {sale.status || 'Completada'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-amber-500 font-medium">
+                          ${Number(sale.total_amount || 0).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-blue-400 font-medium">
+                          Bs {toBs(Number(sale.total_amount || 0)).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewDetail(sale._id)} className="bg-white/5 hover:bg-white/10 text-orange-400">
                             Ver Detalles
                           </Button>
-                       </td>
-                     </motion.tr>
-                   ))}
-                 </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
