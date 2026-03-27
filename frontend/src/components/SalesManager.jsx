@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, X, Check, ShoppingCart, Trash2, Search, ArrowLeft, RefreshCw } from "lucide-react";
+import { Plus, X, Check, ShoppingCart, Trash2, Search, ArrowLeft, RefreshCw, Calendar } from "lucide-react";
 import { useSaleStore } from "../store/saleStore";
 import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
@@ -25,6 +25,8 @@ const SalesManager = () => {
   // Editar tasa
   const [editingRate, setEditingRate] = useState(false);
   const [tempRate, setTempRate] = useState(exchangeRate);
+  // Filtro de fecha
+  const [dateFilter, setDateFilter] = useState("all");
 
   useEffect(() => {
     fetchSales();
@@ -125,6 +127,45 @@ const SalesManager = () => {
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Filtrar ventas por fecha
+  const { filteredSales, filteredTotal } = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const filtered = sales.filter(sale => {
+      if (dateFilter === 'all') return true;
+      const saleDate = new Date(sale.createdAt);
+      const saleDay = new Date(saleDate.getFullYear(), saleDate.getMonth(), saleDate.getDate());
+
+      if (dateFilter === 'today') {
+        return saleDay.getTime() === today.getTime();
+      } else if (dateFilter === '7days') {
+        const limit = new Date(today);
+        limit.setDate(today.getDate() - 7);
+        return saleDay >= limit;
+      } else if (dateFilter === '30days') {
+        const limit = new Date(today);
+        limit.setDate(today.getDate() - 30);
+        return saleDay >= limit;
+      } else if (dateFilter === 'month') {
+        return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+
+    const total = filtered.reduce((acc, sale) => acc + Number(sale.total_amount || 0), 0);
+
+    return { filteredSales: filtered, filteredTotal: total };
+  }, [sales, dateFilter]);
+
+  const dateFilterOptions = [
+    { value: 'all', label: 'Todas' },
+    { value: 'today', label: 'Hoy' },
+    { value: '7days', label: '7 días' },
+    { value: '30days', label: '30 días' },
+    { value: 'month', label: 'Este mes' },
+  ];
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
@@ -394,18 +435,54 @@ const SalesManager = () => {
 
       {/* HISTORIAL LIST */}
       {!isFormOpen && !viewedSale && (
+        <>
+        {/* Barra de filtros por fecha */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <nav className="flex items-center gap-2 flex-wrap" aria-label="Filtro por período">
+            <Calendar size={18} className="text-gray-400 shrink-0" />
+            {dateFilterOptions.map(opt => (
+              <Button
+                key={opt.value}
+                variant={dateFilter === opt.value ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setDateFilter(opt.value)}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </nav>
+          {dateFilter !== 'all' && (
+            <div className="flex items-center gap-4 bg-gradient-to-r from-amber-500/10 to-blue-500/10 border border-amber-500/20 rounded-xl px-4 py-2">
+              <div className="text-right">
+                <p className="text-xs text-gray-400">Total filtrado</p>
+                <span className="text-lg font-bold text-amber-500">${filteredTotal.toFixed(2)}</span>
+                <span className="text-sm text-blue-400 ml-2">Bs {toBs(filteredTotal).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="bg-[#1a1a24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
           {isLoading ? (
              <div className="p-8 text-center text-gray-400">
                Cargando historial de ventas...
              </div>
-          ) : sales.length === 0 ? (
+          ) : filteredSales.length === 0 ? (
              <div className="p-12 text-center">
                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-gray-400 mb-4">
                  <ShoppingCart size={30} />
                </div>
-               <h3 className="text-xl font-bold text-white mb-2">Aún no hay ventas</h3>
-               <p className="text-gray-400 mb-6">El historial de ventas está vacío.</p>
+               <h3 className="text-xl font-bold text-white mb-2">
+                 {sales.length === 0 ? 'Aún no hay ventas' : 'Sin ventas en este período'}
+               </h3>
+               <p className="text-gray-400 mb-6">
+                 {sales.length === 0 ? 'El historial de ventas está vacío.' : 'No se encontraron ventas con el filtro seleccionado.'}
+               </p>
+               {sales.length > 0 && (
+                 <Button variant="outline" size="sm" onClick={() => setDateFilter('all')}>
+                   Ver todas las ventas
+                 </Button>
+               )}
              </div>
           ) : (
             <div className="overflow-x-auto">
@@ -421,7 +498,7 @@ const SalesManager = () => {
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-white/5">
-                   {sales.map((sale, index) => (
+                   {filteredSales.map((sale, index) => (
                      <motion.tr
                        initial={{ opacity: 0, y: 10 }}
                        animate={{ opacity: 1, y: 0 }}
@@ -461,6 +538,7 @@ const SalesManager = () => {
             </div>
           )}
         </div>
+        </>
       )}
     </div>
   );
