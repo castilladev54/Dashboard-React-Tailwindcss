@@ -65,5 +65,17 @@ export const useProductStore = create((set) => ({
       set({ error: error.response?.data?.message || "Error al borrar el producto.", isLoading: false });
       throw error;
     }
+  },
+
+  fetchProductByBarcode: async (barcode) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/barcode/${barcode}`);
+      set({ isLoading: false });
+      return response.data;
+    } catch (error) {
+      set({ error: error.response?.data?.message || "Producto no encontrado", isLoading: false });
+      throw error;
+    }
   }
 }));

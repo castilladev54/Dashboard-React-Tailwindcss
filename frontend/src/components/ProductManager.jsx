@@ -6,6 +6,8 @@ import { useCategoryStore } from "../store/categoryStore";
 import { useCurrencyStore } from "../store/currencyStore";
 import Button from "./Button";
 import toast from "react-hot-toast";
+import BarcodeScanner from "./BarcodeScanner";
+import { Camera, ScanBarcode } from "lucide-react";
 
 const ProductManager = () => {
   const { products, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductStore();
@@ -21,8 +23,11 @@ const ProductManager = () => {
     price: "", 
     stock: "", 
     category: "",
-    unit_type: "unidad"
+    unit_type: "unidad",
+    barcode: ""
   });
+
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -42,7 +47,8 @@ const ProductManager = () => {
       price: product.price, 
       stock: product.stock, 
       category: product.category?._id || product.category || "",
-      unit_type: product.unit_type || "unidad"
+      unit_type: product.unit_type || "unidad",
+      barcode: product.barcode || ""
     });
     setIsFormOpen(true);
   };
@@ -77,7 +83,7 @@ const ProductManager = () => {
       }
       setIsFormOpen(false);
       setEditingId(null);
-      setFormData({ name: "", description: "", price: "", stock: "", category: "", unit_type: "unidad" });
+      setFormData({ name: "", description: "", price: "", stock: "", category: "", unit_type: "unidad", barcode: "" });
     } catch (err) {
       toast.error(error || "Ocurrió un error. Intenta de nuevo.");
     }
@@ -86,7 +92,7 @@ const ProductManager = () => {
   const cancelEdit = () => {
     setIsFormOpen(false);
     setEditingId(null);
-    setFormData({ name: "", description: "", price: "", stock: "", category: "", unit_type: "unidad" });
+    setFormData({ name: "", description: "", price: "", stock: "", category: "", unit_type: "unidad", barcode: "" });
   };
 
   return (
@@ -183,6 +189,31 @@ const ProductManager = () => {
                </div>
 
                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Código de Barras (Opcional)</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <ScanBarcode className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
+                      <input 
+                        type="text" 
+                        name="barcode" 
+                        value={formData.barcode} 
+                        onChange={handleInputChange} 
+                        placeholder="Escanear o escribir..."
+                        className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
+                      />
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      type="button" 
+                      onClick={() => setIsScannerOpen(true)}
+                      className="px-3 bg-white/5 border border-white/10 hover:bg-white/10"
+                    >
+                      <Camera size={20} />
+                    </Button>
+                  </div>
+                </div>
+
+               <div>
                  <label className="block text-sm font-medium text-gray-300 mb-1">Unidad de Medida</label>
                  <select 
                    name="unit_type" 
@@ -258,6 +289,7 @@ const ProductManager = () => {
                   <th className="px-6 py-4 font-medium">Precio USD</th>
                   <th className="px-6 py-4 font-medium">Precio Bs</th>
                   <th className="px-6 py-4 font-medium">Stock</th>
+                  <th className="px-6 py-4 font-medium">Barcode</th>
                   <th className="px-6 py-4 font-medium text-right">Acciones</th>
                 </tr>
               </thead>
@@ -290,6 +322,9 @@ const ProductManager = () => {
                           {prod.stock} {prod.unit_type && prod.unit_type !== 'unidad' ? prod.unit_type : (prod.stock === 1 ? 'unidad' : 'unidades')}
                        </span>
                     </td>
+                    <td className="px-6 py-4 font-mono text-xs text-gray-400">
+                        {prod.barcode || "—"}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <Button variant="icon" onClick={() => handleEdit(prod)} title="Editar" className="text-blue-400 hover:bg-blue-500/10">
@@ -307,6 +342,15 @@ const ProductManager = () => {
           </div>
         )}
       </div>
+      <BarcodeScanner 
+        isOpen={isScannerOpen} 
+        onClose={() => setIsScannerOpen(false)} 
+        onScan={(code) => {
+          setFormData(prev => ({ ...prev, barcode: code }));
+          setIsScannerOpen(false);
+          toast.success(`Código detectado: ${code}`);
+        }}
+      />
     </div>
   );
 };

@@ -7,6 +7,8 @@ import { useAuthStore } from "../store/authStore";
 import { useCurrencyStore } from "../store/currencyStore";
 import Button from "./Button";
 import toast from "react-hot-toast";
+import BarcodeScanner from "./BarcodeScanner";
+import { Camera, ScanBarcode } from "lucide-react";
 
 const SalesManager = () => {
   const { sales, isLoading, error, fetchSales, createSale, fetchSaleById } = useSaleStore();
@@ -27,6 +29,9 @@ const SalesManager = () => {
   const [tempRate, setTempRate] = useState(exchangeRate);
   // Filtro de fecha
   const [dateFilter, setDateFilter] = useState("all");
+
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const { fetchProductByBarcode } = useProductStore();
 
   useEffect(() => {
     fetchSales();
@@ -106,6 +111,57 @@ const SalesManager = () => {
       toast.error(error || "Ocurrió un error al registrar la venta");
     }
   };
+
+  const handleBarcodeScan = async (code) => {
+    try {
+      const { product } = await fetchProductByBarcode(code);
+      if (product) {
+        handleAddItem(product);
+        toast.success(`Añadido: ${product.name}`);
+        setSearchTerm("");
+      }
+    } catch (err) {
+      toast.error(`Código de barras "${code}" no encontrado`);
+    }
+  };
+
+  // Physical Barcode Scanner Support (Keyboard Emulation)
+  useEffect(() => {
+    let buffer = "";
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e) => {
+      // Don't intercept if user is typing in common inputs
+      const tag = e.target.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+         // Special case: if it's the search input, we might want to allow it,
+         // but usually physical scanners send Enter at the end.
+         return;
+      }
+
+      const currentTime = Date.now();
+      
+      // If time between keys is > 50ms, it's likely manual typing
+      if (currentTime - lastKeyTime > 50) {
+        buffer = "";
+      }
+
+      if (e.key === "Enter") {
+        if (buffer.length >= 5) {
+          handleBarcodeScan(buffer);
+          buffer = "";
+          e.preventDefault();
+        }
+      } else if (e.key.length === 1) {
+        buffer += e.key;
+      }
+
+      lastKeyTime = currentTime;
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const cancelForm = () => {
     setIsFormOpen(false);
@@ -236,15 +292,29 @@ const SalesManager = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
             {/* Buscador de productos */}
             <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex flex-col h-[500px]">
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Buscar producto..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
-                />
+              <div className="relative mb-4 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Buscar producto..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                       if (e.key === 'Enter' && searchTerm.length >= 5) {
+                         handleBarcodeScan(searchTerm);
+                       }
+                    }}
+                    className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
+                  />
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsScannerOpen(true)}
+                  className="px-3 bg-white/5 border border-white/10 hover:bg-white/10"
+                >
+                  <Camera size={20} />
+                </Button>
               </div>
               <div className="flex-1 overflow-y-auto pr-2 space-y-2">
                 {filteredProducts.map(product => (
@@ -540,6 +610,11 @@ const SalesManager = () => {
           </div>
         </>
       )}
+      <BarcodeScanner 
+        isOpen={isScannerOpen} 
+        onClose={() => setIsScannerOpen(false)} 
+        onScan={handleBarcodeScan}
+      />
     </div>
   );
 };

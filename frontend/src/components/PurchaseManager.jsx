@@ -6,6 +6,8 @@ import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
 import Button from "./Button";
 import toast from "react-hot-toast";
+import BarcodeScanner from "./BarcodeScanner";
+import { Camera, ScanBarcode } from "lucide-react";
 
 const PurchaseManager = () => {
   const { purchases, isLoading, error, fetchPurchases, createPurchase, fetchPurchaseById } = usePurchaseStore();
@@ -19,6 +21,9 @@ const PurchaseManager = () => {
   const [items, setItems] = useState([
     { product_id: "", quantity: 1, unit_cost: 0, unit_type: "unidad" }
   ]);
+
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const { fetchProductByBarcode } = useProductStore();
 
   useEffect(() => {
     fetchPurchases();
@@ -84,6 +89,53 @@ const PurchaseManager = () => {
     setItems([{ product_id: "", quantity: 1, unit_cost: 0, unit_type: "unidad" }]);
   };
 
+  const handleBarcodeScan = async (code) => {
+    try {
+      const { product } = await fetchProductByBarcode(code);
+      if (product) {
+        // Find if empty row exists
+        const emptyIndex = items.findIndex(item => !item.product_id);
+        if (emptyIndex !== -1) {
+          handleItemChange(emptyIndex, "product_id", product._id);
+        } else {
+          setItems([...items, { product_id: product._id, quantity: 1, unit_cost: product.price, unit_type: product.unit_type || "unidad" }]);
+        }
+        toast.success(`Añadido: ${product.name}`);
+      }
+    } catch (err) {
+      toast.error(`Código de barras "${code}" no encontrado`);
+    }
+  };
+
+  // Physical Barcode Scanner Support
+  useEffect(() => {
+    let buffer = "";
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e) => {
+      if (!isFormOpen) return;
+      const tag = e.target.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      const currentTime = Date.now();
+      if (currentTime - lastKeyTime > 50) buffer = "";
+
+      if (e.key === "Enter") {
+        if (buffer.length >= 5) {
+          handleBarcodeScan(buffer);
+          buffer = "";
+          e.preventDefault();
+        }
+      } else if (e.key.length === 1) {
+        buffer += e.key;
+      }
+      lastKeyTime = currentTime;
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFormOpen]);
+
   const handleViewDetail = async (id) => {
     try {
       const data = await fetchPurchaseById(id);
@@ -141,9 +193,14 @@ const PurchaseManager = () => {
             <div className="border border-white/5 bg-black/20 rounded-xl p-4">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-lg font-medium text-white">Artículos</h4>
-                <Button variant="ghost" size="sm" type="button" onClick={handleAddItem} className="text-orange-400 hover:text-orange-300">
-                  <Plus size={16} /> Añadir Artículo
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" type="button" onClick={() => setIsScannerOpen(true)} className="text-blue-400 hover:text-blue-300">
+                    <Camera size={16} className="mr-1" /> Escanear
+                  </Button>
+                  <Button variant="ghost" size="sm" type="button" onClick={handleAddItem} className="text-orange-400 hover:text-orange-300">
+                    <Plus size={16} /> Añadir Artículo
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -370,6 +427,11 @@ const PurchaseManager = () => {
           )}
         </div>
       )}
+      <BarcodeScanner 
+        isOpen={isScannerOpen} 
+        onClose={() => setIsScannerOpen(false)} 
+        onScan={handleBarcodeScan}
+      />
     </div>
   );
 };
