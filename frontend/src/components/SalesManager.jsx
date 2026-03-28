@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Plus, X, Check, ShoppingCart, Trash2, Search, ArrowLeft, RefreshCw, Calendar } from "lucide-react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, X, Check, ShoppingCart, Trash2, Search, ArrowLeft, RefreshCw, Calendar, Camera, ScanBarcode, HelpCircle, Keyboard } from "lucide-react";
 import { useSaleStore } from "../store/saleStore";
 import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
@@ -8,7 +8,15 @@ import { useCurrencyStore } from "../store/currencyStore";
 import Button from "./Button";
 import toast from "react-hot-toast";
 import BarcodeScanner from "./BarcodeScanner";
-import { Camera, ScanBarcode } from "lucide-react";
+
+// Badge component for keyboard shortcut indicators
+const KBD = ({ children }) => (
+  <kbd className="ml-1.5 hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold text-gray-400 bg-black/40 border border-white/10 rounded-md leading-none">
+    {children}
+  </kbd>
+);
+
+const PAYMENT_METHODS = ["Efectivo", "Efectivo Bs", "Tarjeta", "Transferencia", "Pago Movil"];
 
 const SalesManager = () => {
   const { sales, isLoading, error, fetchSales, createSale, fetchSaleById } = useSaleStore();
@@ -31,7 +39,12 @@ const SalesManager = () => {
   const [dateFilter, setDateFilter] = useState("all");
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const { fetchProductByBarcode } = useProductStore();
+  const searchInputRef = useRef(null);
+  const submitBtnRef = useRef(null);
+  const paymentSelectRef = useRef(null);
+  const qtyInputRefs = useRef({});
 
   useEffect(() => {
     fetchSales();
@@ -125,43 +138,143 @@ const SalesManager = () => {
     }
   };
 
-  // Physical Barcode Scanner Support (Keyboard Emulation)
+  // Cycle payment method
+  const cyclePaymentMethod = useCallback(() => {
+    setPaymentMethod(prev => {
+      const idx = PAYMENT_METHODS.indexOf(prev);
+      const next = PAYMENT_METHODS[(idx + 1) % PAYMENT_METHODS.length];
+      toast.success(`Método: ${next}`, { duration: 1200, icon: '💳' });
+      return next;
+    });
+  }, []);
+
+  // Clear cart with confirmation
+  const clearCart = useCallback(() => {
+    if (items.length === 0) return;
+    if (window.confirm('¿Vaciar todo el carrito?')) {
+      setItems([]);
+      toast.success('Carrito vaciado', { icon: '🗑️' });
+    }
+  }, [items.length]);
+
+  // Modify last item quantity
+  const modifyLastItemQty = useCallback((delta) => {
+    if (items.length === 0) return;
+    const lastIdx = items.length - 1;
+    const newItems = [...items];
+    const newQty = (parseFloat(newItems[lastIdx].quantity) || 0) + delta;
+    if (newQty <= 0) {
+      newItems.splice(lastIdx, 1);
+    } else if (newQty > newItems[lastIdx].maxStock) {
+      toast.error(`Stock máximo: ${newItems[lastIdx].maxStock}`);
+      return;
+    } else {
+      newItems[lastIdx].quantity = newQty;
+    }
+    setItems(newItems);
+  }, [items]);
+
+  // ═══════════════════════════════════════════
+  // GLOBAL KEYBOARD SHORTCUTS + BARCODE SCANNER
+  // ═══════════════════════════════════════════
   useEffect(() => {
     let buffer = "";
     let lastKeyTime = Date.now();
 
     const handleKeyDown = (e) => {
-      // Don't intercept if user is typing in common inputs
       const tag = e.target.tagName.toLowerCase();
-      if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-         // Special case: if it's the search input, we might want to allow it,
-         // but usually physical scanners send Enter at the end.
-         return;
-      }
+      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
 
-      const currentTime = Date.now();
-      
-      // If time between keys is > 50ms, it's likely manual typing
-      if (currentTime - lastKeyTime > 50) {
-        buffer = "";
-      }
-
-      if (e.key === "Enter") {
-        if (buffer.length >= 5) {
-          handleBarcodeScan(buffer);
-          buffer = "";
+      // ── F-key shortcuts (always active, even in inputs) ──
+      switch (e.key) {
+        case 'F1':
           e.preventDefault();
-        }
-      } else if (e.key.length === 1) {
-        buffer += e.key;
+          setShowHelp(prev => !prev);
+          return;
+        case 'F2':
+          e.preventDefault();
+          if (!isFormOpen) {
+            setIsFormOpen(true);
+            setViewedSale(null);
+          }
+          return;
+        case 'F3':
+          e.preventDefault();
+          if (isFormOpen && searchInputRef.current) {
+            searchInputRef.current.focus();
+          }
+          return;
+        case 'F4':
+          e.preventDefault();
+          if (isFormOpen && items.length > 0 && submitBtnRef.current) {
+            submitBtnRef.current.click();
+          }
+          return;
+        case 'F5':
+          e.preventDefault();
+          if (isFormOpen) cyclePaymentMethod();
+          return;
+        case 'F6':
+          e.preventDefault();
+          if (isFormOpen) setIsScannerOpen(true);
+          return;
+        case 'F8':
+          e.preventDefault();
+          if (isFormOpen) clearCart();
+          return;
+        case 'Escape':
+          e.preventDefault();
+          if (showHelp) { setShowHelp(false); return; }
+          if (isScannerOpen) { setIsScannerOpen(false); return; }
+          if (viewedSale) { setViewedSale(null); return; }
+          if (isFormOpen) { cancelForm(); return; }
+          return;
+        default:
+          break;
       }
 
-      lastKeyTime = currentTime;
+      // ── "/" to focus search (only when not in an input) ──
+      if (e.key === '/' && !isInput && isFormOpen) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      // ── +/- to modify last item qty (only outside inputs and form open) ──
+      if (!isInput && isFormOpen) {
+        if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          modifyLastItemQty(1);
+          return;
+        }
+        if (e.key === '-') {
+          e.preventDefault();
+          modifyLastItemQty(-1);
+          return;
+        }
+      }
+
+      // ── Physical barcode scanner detection (only outside inputs) ──
+      if (!isInput) {
+        const currentTime = Date.now();
+        if (currentTime - lastKeyTime > 50) buffer = "";
+
+        if (e.key === "Enter") {
+          if (buffer.length >= 5) {
+            handleBarcodeScan(buffer);
+            buffer = "";
+            e.preventDefault();
+          }
+        } else if (e.key.length === 1) {
+          buffer += e.key;
+        }
+        lastKeyTime = currentTime;
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isFormOpen, viewedSale, showHelp, isScannerOpen, items, cyclePaymentMethod, clearCart, modifyLastItemQty]);
 
   const cancelForm = () => {
     setIsFormOpen(false);
@@ -236,6 +349,7 @@ const SalesManager = () => {
             <Button variant="primary" onClick={() => setIsFormOpen(true)}>
               <Plus size={20} />
               Nueva Venta
+              <KBD>F2</KBD>
             </Button>
           )}
         </div>
@@ -296,21 +410,38 @@ const SalesManager = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                   <input
+                    ref={searchInputRef}
                     type="text"
                     placeholder="Buscar producto..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={(e) => {
-                       if (e.key === 'Enter' && searchTerm.length >= 5) {
-                         handleBarcodeScan(searchTerm);
-                       }
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (filteredProducts.length > 0) {
+                          handleAddItem(filteredProducts[0]);
+                          setSearchTerm("");
+                          // Focus the last item's quantity after React renders
+                          setTimeout(() => {
+                            const keys = Object.keys(qtyInputRefs.current);
+                            const lastKey = keys[keys.length - 1];
+                            if (lastKey && qtyInputRefs.current[lastKey]) {
+                              qtyInputRefs.current[lastKey].focus();
+                              qtyInputRefs.current[lastKey].select();
+                            }
+                          }, 50);
+                        } else if (searchTerm.length >= 5) {
+                          handleBarcodeScan(searchTerm);
+                        }
+                      }
                     }}
                     className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
                   />
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsScannerOpen(true)}
+                  title="Escanear (F6)"
                   className="px-3 bg-white/5 border border-white/10 hover:bg-white/10"
                 >
                   <Camera size={20} />
@@ -360,12 +491,25 @@ const SalesManager = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <input
+                            ref={(el) => { if (el) qtyInputRefs.current[index] = el; else delete qtyInputRefs.current[index]; }}
                             type="number"
                             min="0.01"
                             step="0.01"
                             max={item.maxStock}
                             value={item.quantity}
                             onChange={(e) => handleQuantityChange(index, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                // If there's a next item, focus its qty; otherwise focus payment
+                                if (qtyInputRefs.current[index + 1]) {
+                                  qtyInputRefs.current[index + 1].focus();
+                                  qtyInputRefs.current[index + 1].select();
+                                } else {
+                                  paymentSelectRef.current?.focus();
+                                }
+                              }
+                            }}
                             className="w-20 bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-center text-white focus:outline-none focus:border-orange-500 transition"
                           />
                           <Button variant="icon" type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:bg-red-500/10">
@@ -379,10 +523,17 @@ const SalesManager = () => {
 
                 <div className="border-t border-white/10 pt-4 mt-auto">
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Método de Pago</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Método de Pago <KBD>F5</KBD></label>
                     <select
+                      ref={paymentSelectRef}
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          submitBtnRef.current?.focus();
+                        }
+                      }}
                       className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
                       required
                     >
@@ -410,8 +561,8 @@ const SalesManager = () => {
                 <Button variant="secondary" type="button" onClick={cancelForm} className="w-1/3 py-3">
                   Cancelar
                 </Button>
-                <Button variant="primary" type="submit" disabled={isLoading || items.length === 0} className="w-2/3 py-3">
-                  {isLoading ? "Procesando..." : <><Check size={20} /> Procesar Venta</>}
+                <Button ref={submitBtnRef} variant="primary" type="submit" disabled={isLoading || items.length === 0} className="w-2/3 py-3">
+                  {isLoading ? "Procesando..." : <><Check size={20} /> Procesar Venta <KBD>F4</KBD></>}
                 </Button>
               </div>
             </form>
@@ -610,11 +761,103 @@ const SalesManager = () => {
           </div>
         </>
       )}
-      <BarcodeScanner 
-        isOpen={isScannerOpen} 
-        onClose={() => setIsScannerOpen(false)} 
+      <BarcodeScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
         onScan={handleBarcodeScan}
       />
+
+      {/* ═══ HELP MODAL (F1) ═══ */}
+      <AnimatePresence>
+        {showHelp && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
+            <motion.aside
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-[#1a1a24] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <header className="flex items-center justify-between p-5 border-b border-white/5 bg-black/20">
+                <div className="flex items-center gap-2">
+                  <Keyboard size={22} className="text-orange-500" />
+                  <h3 className="text-lg font-bold text-white">Atajos de Teclado</h3>
+                </div>
+                <button onClick={() => setShowHelp(false)} className="p-1 text-gray-400 hover:text-white transition">
+                  <X size={22} />
+                </button>
+              </header>
+
+              <div className="p-5 space-y-5 max-h-[65vh] overflow-y-auto">
+                {/* General */}
+                <section>
+                  <h4 className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-3">General</h4>
+                  <ul className="space-y-2">
+                    {[
+                      ['F1', 'Mostrar / ocultar esta ayuda'],
+                      ['F2', 'Nueva venta'],
+                      ['Esc', 'Cerrar formulario / vista de detalle'],
+                    ].map(([key, desc]) => (
+                      <li key={key} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-300">{desc}</span>
+                        <kbd className="px-2 py-1 text-xs font-mono font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 rounded-md">{key}</kbd>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                {/* Formulario de venta */}
+                <section>
+                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Formulario de Venta</h4>
+                  <ul className="space-y-2">
+                    {[
+                      ['F3 ó /', 'Enfocar buscador de productos'],
+                      ['F4', 'Procesar / confirmar venta'],
+                      ['F5', 'Ciclar método de pago'],
+                      ['F6', 'Abrir escáner de cámara'],
+                      ['F8', 'Vaciar carrito (con confirmación)'],
+                      ['+', 'Aumentar cantidad del último ítem'],
+                      ['−', 'Disminuir cantidad del último ítem'],
+                    ].map(([key, desc]) => (
+                      <li key={key} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-300">{desc}</span>
+                        <kbd className="px-2 py-1 text-xs font-mono font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-md">{key}</kbd>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                {/* Scanner */}
+                <section>
+                  <h4 className="text-xs font-bold text-green-400 uppercase tracking-widest mb-3">Escáner Físico</h4>
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    El sistema detecta automáticamente escáneres USB / Bluetooth.
+                    Solo apunta y escanea — el producto se añade al carrito al instante.
+                  </p>
+                </section>
+              </div>
+
+              <footer className="p-4 border-t border-white/5 bg-black/20 text-center">
+                <p className="text-xs text-gray-500">Presiona <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-black/40 border border-white/10 rounded">F1</kbd> o <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-black/40 border border-white/10 rounded">Esc</kbd> para cerrar</p>
+              </footer>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating F1 hint (only visible when form is not open) */}
+      {!isFormOpen && !viewedSale && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-[#1a1a24]/90 border border-white/10 rounded-xl text-gray-400 hover:text-orange-400 hover:border-orange-500/30 transition backdrop-blur-sm shadow-lg"
+          >
+            <HelpCircle size={18} />
+            <span className="text-xs font-medium">Atajos</span>
+            <KBD>F1</KBD>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

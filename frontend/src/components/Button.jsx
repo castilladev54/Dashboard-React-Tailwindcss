@@ -1,3 +1,5 @@
+import { forwardRef } from "react";
+
 /**
  * Componente Button reutilizable con variantes predefinidas.
  *
@@ -28,7 +30,7 @@ const variantClasses = {
     "bg-orange-500/10 text-orange-500 border border-orange-500/20 hover:bg-orange-500/20",
 };
 
-const Button = ({
+const Button = forwardRef(({
   children,
   variant = "primary",
   size = "md",
@@ -36,7 +38,7 @@ const Button = ({
   className = "",
   disabled,
   ...props
-}) => {
+}, ref) => {
   const isIconVariant = variant === "icon";
 
   const baseClasses =
@@ -53,6 +55,7 @@ const Button = ({
 
   return (
     <button
+      ref={ref}
       className={classes}
       disabled={disabled || isLoading}
       {...props}
@@ -76,6 +79,8 @@ const Button = ({
       )}
     </button>
   );
-};
+});
+
+Button.displayName = "Button";
 
 export default Button;
