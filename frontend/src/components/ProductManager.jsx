@@ -96,14 +96,14 @@ const ProductManager = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-white tracking-wide">
+    <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
           Gestión de <span className="text-orange-500">Productos</span>
         </h2>
         
         {!isFormOpen && (
-          <Button variant="primary" onClick={() => setIsFormOpen(true)}>
+          <Button variant="primary" onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto text-sm sm:text-base">
             <Plus size={20} />
             Nuevo Producto
           </Button>
@@ -128,7 +128,7 @@ const ProductManager = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                <div>
                  <label className="block text-sm font-medium text-gray-300 mb-1">Nombre del producto</label>
                  <input 
@@ -283,14 +283,13 @@ const ProductManager = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-sm uppercase tracking-wider">
-                  <th className="px-6 py-4 font-medium">Producto</th>
-                  <th className="px-6 py-4 font-medium">Categoría</th>
-                  <th className="px-6 py-4 font-medium">Precio USD</th>
-                  <th className="px-6 py-4 font-medium">Precio Bs</th>
-                  <th className="px-6 py-4 font-medium">Stock</th>
-                  <th className="px-6 py-4 font-medium">Barcode</th>
-                  <th className="px-6 py-4 font-medium text-right">Acciones</th>
+                <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-xs sm:text-sm uppercase tracking-wider">
+                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Producto</th>
+                  <th className="hidden md:table-cell px-6 py-4 font-medium">Categoría</th>
+                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Precio</th>
+                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-center sm:text-left">Stock</th>
+                  <th className="hidden lg:table-cell px-6 py-4 font-medium">Barcode</th>
+                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -302,36 +301,34 @@ const ProductManager = () => {
                     key={prod._id} 
                     className="hover:bg-white/5 transition-colors group"
                   >
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-white">{prod.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">ID: {prod._id.slice(-6)}</div>
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="font-semibold text-white text-sm sm:text-base">{prod.name}</div>
+                      <div className="text-[10px] sm:text-xs text-gray-500 mt-1">ID: {prod._id.slice(-6)}</div>
                     </td>
-                    <td className="px-6 py-4 text-gray-400">
+                    <td className="hidden md:table-cell px-6 py-4 text-gray-400">
                        <span className="bg-white/5 px-2 py-1 rounded-md text-xs border border-white/10">
                           {prod.category?.name || "Sin Categoría"}
                        </span>
                     </td>
-                    <td className="px-6 py-4 text-amber-500 font-medium">
-                       ${Number(prod.price).toFixed(2)}
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="text-amber-500 font-medium text-sm sm:text-base">${Number(prod.price).toFixed(2)}</div>
+                      <div className="text-[10px] sm:text-xs text-blue-400 mt-0.5">Bs {toBs(prod.price).toFixed(2)}</div>
                     </td>
-                    <td className="px-6 py-4 text-blue-400 font-medium">
-                       Bs {toBs(prod.price).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-3 sm:px-6 sm:py-4 text-center sm:text-left">
                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${prod.stock > 10 ? 'bg-green-500/10 text-green-400 border border-green-500/20' : prod.stock > 0 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                          {prod.stock} {prod.unit_type && prod.unit_type !== 'unidad' ? prod.unit_type : (prod.stock === 1 ? 'unidad' : 'unidades')}
+                          {prod.stock} <span className="hidden sm:inline">{prod.unit_type && prod.unit_type !== 'unidad' ? prod.unit_type : (prod.stock === 1 ? 'unidad' : 'unidades')}</span>
                        </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-gray-400">
+                    <td className="hidden lg:table-cell px-6 py-4 font-mono text-xs text-gray-400">
                         {prod.barcode || "—"}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <Button variant="icon" onClick={() => handleEdit(prod)} title="Editar" className="text-blue-400 hover:bg-blue-500/10">
-                          <Edit2 size={18} />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4 text-right">
+                      <div className="flex items-center justify-end gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <Button variant="icon" onClick={() => handleEdit(prod)} title="Editar" className="text-blue-400 hover:bg-blue-500/10 p-1.5 sm:p-2">
+                          <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </Button>
-                        <Button variant="icon" onClick={() => handleDelete(prod._id)} title="Eliminar" className="text-red-400 hover:bg-red-500/10">
-                          <Trash2 size={18} />
+                        <Button variant="icon" onClick={() => handleDelete(prod._id)} title="Eliminar" className="text-red-400 hover:bg-red-500/10 p-1.5 sm:p-2">
+                          <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </Button>
                       </div>
                     </td>

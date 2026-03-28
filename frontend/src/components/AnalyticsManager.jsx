@@ -111,17 +111,17 @@ const AnalyticsManager = () => {
   const isLoading = isLoadingSales || isLoadingPurchases;
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6">
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-         <h2 className="text-3xl font-bold text-white tracking-wide">
+         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
            Resumen de <span className="text-orange-500">Ganancias</span>
          </h2>
-         <div className="flex items-center gap-2 bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2">
-            <Calendar size={18} className="text-orange-500" />
+         <div className="flex items-center w-full md:w-auto gap-2 bg-[#1a1a24] border border-white/10 rounded-xl px-4 py-2">
+            <Calendar size={18} className="text-orange-500 shrink-0" />
             <select
                value={dateFilter}
                onChange={(e) => setDateFilter(e.target.value)}
-               className="bg-transparent text-white focus:outline-none cursor-pointer text-sm"
+               className="bg-transparent text-white focus:outline-none cursor-pointer text-sm w-full"
             >
                <option value="all" className="bg-[#1a1a24]">Todo el tiempo</option>
                <option value="today" className="bg-[#1a1a24]">Hoy</option>
@@ -212,10 +212,10 @@ const AnalyticsManager = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className="bg-[#1a1a24] border border-white/10 rounded-2xl p-6 shadow-xl"
+              className="bg-[#1a1a24] border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl"
             >
-               <h3 className="text-lg font-medium text-white mb-6">Comparativa Diaria (Ventas vs Compras)</h3>
-               <div className="h-[400px] w-full">
+               <h3 className="text-base sm:text-lg font-medium text-white mb-4 sm:mb-6">Comparativa Diaria (Ventas vs Compras)</h3>
+               <div className="h-[300px] sm:h-[400px] w-full">
                  <ResponsiveContainer width="100%" height="100%">
                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                      <defs>
@@ -247,10 +247,10 @@ const AnalyticsManager = () => {
                initial={{ opacity: 0, scale: 0.95 }}
                animate={{ opacity: 1, scale: 1 }}
                transition={{ delay: 0.4 }}
-               className="bg-[#1a1a24] border border-white/10 rounded-2xl p-6 shadow-xl"
+               className="bg-[#1a1a24] border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl"
             >
-               <h3 className="text-lg font-medium text-white mb-6">Ganancia / Flujo de Caja</h3>
-               <div className="h-[400px] w-full">
+               <h3 className="text-base sm:text-lg font-medium text-white mb-4 sm:mb-6">Ganancia / Flujo de Caja</h3>
+               <div className="h-[300px] sm:h-[400px] w-full">
                  <ResponsiveContainer width="100%" height="100%">
                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" vertical={false} />
@@ -276,8 +276,8 @@ const AnalyticsManager = () => {
 
           {/* TABLA DE DETALLE POR DÍA */}
           <section className="mt-8 bg-[#1a1a24] border border-white/10 rounded-2xl shadow-xl overflow-hidden" aria-label="Detalle Diario de Transacciones">
-            <header className="p-6 border-b border-white/10 flex justify-between items-center bg-black/20">
-              <h3 className="text-lg font-medium text-white flex items-center gap-2">
+            <header className="p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-black/20">
+              <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
                 <Calendar size={20} className="text-orange-500"/>
                 Detalle Diario
               </h3>
@@ -285,20 +285,20 @@ const AnalyticsManager = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-black/40 text-gray-400 text-sm tracking-wider uppercase">
-                    <th className="p-4 font-medium" scope="col">Fecha</th>
-                    <th className="p-4 font-medium text-right" scope="col">Ingresos</th>
-                    <th className="p-4 font-medium text-right" scope="col">Compras</th>
-                    <th className="p-4 font-medium text-right" scope="col">Ganancia</th>
+                  <tr className="bg-black/40 text-gray-400 text-xs sm:text-sm tracking-wider uppercase">
+                    <th className="px-4 py-3 sm:p-4 font-medium" scope="col">Fecha</th>
+                    <th className="px-4 py-3 sm:p-4 font-medium text-right" scope="col">Ventas</th>
+                    <th className="px-4 py-3 sm:p-4 font-medium text-right" scope="col">Compras</th>
+                    <th className="px-4 py-3 sm:p-4 font-medium text-right" scope="col">Ganancia</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {chartData.slice().reverse().map((row, index) => (
-                    <tr key={index} className="hover:bg-white/5 transition-colors text-gray-300">
-                      <td className="p-4 whitespace-nowrap">{row.date}</td>
-                      <td className="p-4 text-right text-green-400 font-medium whitespace-nowrap">${row.Ventas.toFixed(2)}</td>
-                      <td className="p-4 text-right text-red-400 font-medium whitespace-nowrap">${row.Compras.toFixed(2)}</td>
-                      <td className={`p-4 text-right font-bold whitespace-nowrap ${row.Ganancia >= 0 ? 'text-orange-400' : 'text-red-500'}`}>
+                    <tr key={index} className="hover:bg-white/5 transition-colors text-gray-300 text-sm sm:text-base">
+                      <td className="px-4 py-3 sm:p-4 whitespace-nowrap">{row.date}</td>
+                      <td className="px-4 py-3 sm:p-4 text-right text-green-400 font-medium whitespace-nowrap">${row.Ventas.toFixed(2)}</td>
+                      <td className="px-4 py-3 sm:p-4 text-right text-red-400 font-medium whitespace-nowrap">${row.Compras.toFixed(2)}</td>
+                      <td className={`px-4 py-3 sm:p-4 text-right font-bold whitespace-nowrap ${row.Ganancia >= 0 ? 'text-orange-400' : 'text-red-500'}`}>
                         ${row.Ganancia.toFixed(2)}
                       </td>
                     </tr>
