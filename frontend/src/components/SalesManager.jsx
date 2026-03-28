@@ -337,16 +337,16 @@ const SalesManager = () => {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6">
+    <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
       {/* Header con tasa cambiaria */}
       <div className="flex flex-col gap-4 mb-8">
-        <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-white tracking-wide">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
             Punto de <span className="text-orange-500">Venta</span>
           </h2>
 
           {!isFormOpen && !viewedSale && (
-            <Button variant="primary" onClick={() => setIsFormOpen(true)}>
+            <Button variant="primary" onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto">
               <Plus size={20} />
               Nueva Venta
               <KBD>F2</KBD>
@@ -355,7 +355,7 @@ const SalesManager = () => {
         </div>
 
         {/* Barra de tasa cambiaria */}
-        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500/10 to-green-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
+        <div className="flex flex-wrap items-center gap-3 bg-gradient-to-r from-blue-500/10 to-green-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
           <RefreshCw size={18} className="text-blue-400 shrink-0" />
           <span className="text-sm text-gray-300 whitespace-nowrap">Tasa del Día:</span>
           {editingRate ? (
@@ -403,9 +403,9 @@ const SalesManager = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 relative z-10">
             {/* Buscador de productos */}
-            <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex flex-col h-[500px]">
+            <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex flex-col h-[400px] lg:h-[500px]">
               <div className="relative mb-4 flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -469,7 +469,7 @@ const SalesManager = () => {
             </div>
 
             {/* Carrito de venta */}
-            <form onSubmit={handleSubmit} className="flex flex-col h-[500px]">
+            <form onSubmit={handleSubmit} className="flex flex-col h-[450px] lg:h-[500px]">
               <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex-1 flex flex-col mb-4">
                 <h4 className="text-lg font-medium text-white mb-4">Carrito de Compra</h4>
 
@@ -709,13 +709,12 @@ const SalesManager = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-sm uppercase tracking-wider">
-                      <th className="px-6 py-4 font-medium">Fecha</th>
-                      <th className="px-6 py-4 font-medium">Método Pago</th>
-                      <th className="px-6 py-4 font-medium">Estado</th>
-                      <th className="px-6 py-4 font-medium">Total USD</th>
-                      <th className="px-6 py-4 font-medium">Total Bs</th>
-                      <th className="px-6 py-4 font-medium text-right">Acciones</th>
+                    <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-xs sm:text-sm uppercase tracking-wider">
+                      <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Fecha</th>
+                      <th className="hidden md:table-cell px-6 py-4 font-medium">Método Pago</th>
+                      <th className="hidden sm:table-cell px-6 py-4 font-medium">Estado</th>
+                      <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Total</th>
+                      <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -727,29 +726,28 @@ const SalesManager = () => {
                         key={sale._id}
                         className="hover:bg-white/5 transition-colors group"
                       >
-                        <td className="px-6 py-4 text-gray-300">
+                        <td className="px-3 py-3 sm:px-6 sm:py-4 text-gray-300 text-sm">
                           {new Date(sale.createdAt).toLocaleDateString()}
-                          <div className="text-xs text-gray-500 mt-0.5">
+                          <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
                             {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-white font-medium">
+                        <td className="hidden md:table-cell px-6 py-4 text-white font-medium text-sm">
                           {sale.payment_method}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="hidden sm:table-cell px-6 py-4">
                           <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1 rounded text-xs font-semibold">
                             {sale.status || 'Completada'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-amber-500 font-medium">
-                          ${Number(sale.total_amount || 0).toFixed(2)}
+                        <td className="px-3 py-3 sm:px-6 sm:py-4">
+                          <div className="text-amber-500 font-medium text-sm sm:text-base">${Number(sale.total_amount || 0).toFixed(2)}</div>
+                          <div className="text-[10px] sm:text-xs text-blue-400 mt-0.5">Bs {toBs(Number(sale.total_amount || 0)).toFixed(2)}</div>
                         </td>
-                        <td className="px-6 py-4 text-blue-400 font-medium">
-                          Bs {toBs(Number(sale.total_amount || 0)).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewDetail(sale._id)} className="bg-white/5 hover:bg-white/10 text-orange-400">
-                            Ver Detalles
+                        <td className="px-3 py-3 sm:px-6 sm:py-4 text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewDetail(sale._id)} className="bg-white/5 hover:bg-white/10 text-orange-400 px-2 sm:px-3 text-xs sm:text-sm">
+                            <span className="hidden sm:inline">Ver Detalles</span>
+                            <span className="sm:hidden">Detalles</span>
                           </Button>
                         </td>
                       </motion.tr>
