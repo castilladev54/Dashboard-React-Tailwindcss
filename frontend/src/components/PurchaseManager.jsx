@@ -5,9 +5,12 @@ import { usePurchaseStore } from "../store/purchaseStore";
 import { useProductStore } from "../store/productStore";
 import { useAuthStore } from "../store/authStore";
 import Button from "./Button";
+import Pagination from "./Pagination";
 import toast from "react-hot-toast";
 import BarcodeScanner from "./BarcodeScanner";
 import { Camera, ScanBarcode } from "lucide-react";
+
+const ITEMS_PER_PAGE = 10;
 
 const PurchaseManager = () => {
   const { purchases, isLoading, error, fetchPurchases, createPurchase, fetchPurchaseById } = usePurchaseStore();
@@ -15,6 +18,10 @@ const PurchaseManager = () => {
   const { user } = useAuthStore();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(purchases.length / ITEMS_PER_PAGE);
+  const currentPurchases = purchases.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   const [viewedPurchase, setViewedPurchase] = useState(null); // Para ver el detalle
 
   const [supplier, setSupplier] = useState("");
@@ -391,7 +398,7 @@ const PurchaseManager = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {purchases.map((purchase, index) => (
+                  {currentPurchases.map((purchase, index) => (
                     <motion.tr
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -424,6 +431,11 @@ const PurchaseManager = () => {
                   ))}
                 </tbody>
               </table>
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
         </div>

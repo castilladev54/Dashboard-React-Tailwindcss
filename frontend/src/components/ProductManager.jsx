@@ -5,9 +5,12 @@ import { useProductStore } from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore";
 import { useCurrencyStore } from "../store/currencyStore";
 import Button from "./Button";
+import Pagination from "./Pagination";
 import toast from "react-hot-toast";
 import BarcodeScanner from "./BarcodeScanner";
 import { Camera, ScanBarcode } from "lucide-react";
+
+const ITEMS_PER_PAGE = 10;
 
 const ProductManager = () => {
   const { products, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductStore();
@@ -15,6 +18,10 @@ const ProductManager = () => {
   const { exchangeRate, toBs } = useCurrencyStore();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const currentProducts = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   const [editingId, setEditingId] = useState(null);
   
   const [formData, setFormData] = useState({ 
@@ -293,7 +300,7 @@ const ProductManager = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {products.map((prod, index) => (
+                {currentProducts.map((prod, index) => (
                   <motion.tr 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -336,6 +343,12 @@ const ProductManager = () => {
                 ))}
               </tbody>
             </table>
+            
+            <Pagination 
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+            />
           </div>
         )}
       </div>

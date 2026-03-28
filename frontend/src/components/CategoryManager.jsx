@@ -3,12 +3,19 @@ import { motion } from "framer-motion";
 import { Plus, Edit2, Trash2, X, Check } from "lucide-react";
 import { useCategoryStore } from "../store/categoryStore";
 import Button from "./Button";
+import Pagination from "./Pagination";
 import toast from "react-hot-toast";
+
+const ITEMS_PER_PAGE = 10;
 
 const CategoryManager = () => {
   const { categories, isLoading, error, fetchCategories, createCategory, updateCategory, deleteCategory } = useCategoryStore();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+  const currentCategories = categories.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   const [editingId, setEditingId] = useState(null);
   
   const [formData, setFormData] = useState({ name: "", description: "" });
@@ -170,7 +177,7 @@ const CategoryManager = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {categories.map((cat, index) => (
+                {currentCategories.map((cat, index) => (
                   <motion.tr 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -199,6 +206,12 @@ const CategoryManager = () => {
                 ))}
               </tbody>
             </table>
+            
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
       </div>
