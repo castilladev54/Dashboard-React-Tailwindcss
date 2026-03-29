@@ -12,6 +12,7 @@ import PurchaseManager from "../components/PurchaseManager";
 import SalesManager from "../components/SalesManager";
 import AnalyticsManager from "../components/AnalyticsManager";
 import AdminUserCreator from "../components/AdminUserCreator";
+import AdjustmentManager from "../components/AdjustmentManager";
 
 const DashboardPage = () => {
   const { user, logout } = useAuthStore();
@@ -30,6 +31,7 @@ const DashboardPage = () => {
         {activeTab === "purchases" && <PurchaseManager />}
         {activeTab === "sales" && <SalesManager />}
         {activeTab === "analytics" && <AnalyticsManager />}
+        {activeTab === "adjustments" && <AdjustmentManager />}
         {activeTab === "adminCreateUser" && <AdminUserCreator />}
       </main>
     </>
