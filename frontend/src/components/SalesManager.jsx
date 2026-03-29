@@ -401,8 +401,8 @@ const SalesManager = () => {
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 relative z-10 w-full min-w-full sm:min-w-[500px] lg:min-w-[800px]">
           {/* Buscador de productos */}
-          <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex flex-col h-[400px] lg:h-[500px]">
-            <div className="relative mb-4 flex gap-2">
+          <div className="border border-white/5 bg-black/20 rounded-xl p-3 sm:p-4 flex flex-col h-[50vh] min-h-[300px] lg:h-[500px]">
+            <div className="relative mb-3 flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <InputText
@@ -431,33 +431,33 @@ const SalesManager = () => {
                       }
                     }
                   }}
-                  className="pl-10"
+                  className="pl-10 text-sm sm:text-base"
                 />
               </div>
               <Button
                 variant="outline"
                 onClick={() => setIsScannerOpen(true)}
                 title="Escanear (F6)"
-                className="px-3 bg-white/5 border border-white/10 hover:bg-white/10"
+                className="px-3 bg-white/5 border border-white/10 hover:bg-white/10 shrink-0"
               >
                 <Camera size={20} />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+            <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-2">
               {filteredProducts.map(product => (
                 <div
                   key={product._id}
-                  className={`flex justify-between items-center p-3 rounded-lg border border-white/5 transition
+                  className={`flex justify-between items-center p-2 sm:p-3 rounded-lg border border-white/5 transition
                     ${product.stock > 0 ? 'bg-white/5 hover:bg-white/10 cursor-pointer' : 'bg-red-500/5 opacity-50 cursor-not-allowed'}`}
                   onClick={() => handleAddItem(product)}
                 >
-                  <div>
-                    <h4 className="text-white font-medium">{product.name} {product.unit_type && product.unit_type !== "unidad" ? `(${product.unit_type})` : ""}</h4>
+                  <div className="flex-1 truncate pr-2">
+                    <h4 className="text-white font-medium text-sm sm:text-base truncate">{product.name} {product.unit_type && product.unit_type !== "unidad" ? `(${product.unit_type})` : ""}</h4>
                     <p className="text-xs text-gray-400">Stock: {product.stock} {product.unit_type && product.unit_type !== "unidad" ? product.unit_type : (product.stock === 1 ? 'ud' : 'uds')}</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-orange-400 font-bold">${Number(product.price).toFixed(2)}</div>
-                    <div className="text-xs text-blue-400">Bs {toBs(product.price).toFixed(2)}</div>
+                  <div className="text-right shrink-0">
+                    <div className="text-orange-400 font-bold text-sm sm:text-base">${Number(product.price).toFixed(2)}</div>
+                    <div className="text-[10px] sm:text-xs text-blue-400">Bs {toBs(product.price).toFixed(2)}</div>
                   </div>
                 </div>
               ))}
@@ -465,27 +465,27 @@ const SalesManager = () => {
           </div>
 
           {/* Carrito de venta */}
-          <form onSubmit={handleSubmit} className="flex flex-col h-[450px] lg:h-[500px]">
-            <div className="border border-white/5 bg-black/20 rounded-xl p-4 flex-1 flex flex-col mb-4">
-              <h4 className="text-lg font-medium text-white mb-4">Carrito de Compra</h4>
+          <form onSubmit={handleSubmit} className="flex flex-col h-[55vh] min-h-[350px] lg:h-[500px]">
+            <div className="border border-white/5 bg-black/20 rounded-xl p-3 sm:p-4 flex-1 flex flex-col mb-4">
+              <h4 className="text-base sm:text-lg font-medium text-white mb-3">Carrito de Compra</h4>
 
-              <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+              <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-2 mb-4">
                 {items.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-gray-500">
                     <ShoppingCart size={40} className="mb-2 opacity-50" />
-                    <p>El carrito está vacío</p>
+                    <p className="text-sm">El carrito está vacío</p>
                   </div>
                 ) : (
                   items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/5">
-                      <div className="flex-1">
-                        <h5 className="text-white font-medium text-sm">{item.name} {item.unit_type && item.unit_type !== "unidad" ? `(${item.unit_type})` : ""}</h5>
-                        <div className="flex gap-3">
-                          <span className="text-amber-500 font-bold text-sm">${item.unit_price.toFixed(2)}</span>
-                          <span className="text-blue-400 text-xs leading-5">Bs {toBs(item.unit_price).toFixed(2)}</span>
+                    <div key={index} className="flex justify-between items-center bg-white/5 p-2 sm:p-3 rounded-lg border border-white/5">
+                      <div className="flex-1 truncate pr-2">
+                        <h5 className="text-white font-medium text-sm truncate">{item.name} {item.unit_type && item.unit_type !== "unidad" ? `(${item.unit_type})` : ""}</h5>
+                        <div className="flex gap-2 sm:gap-3 items-end">
+                          <span className="text-amber-500 font-bold text-xs sm:text-sm">${item.unit_price.toFixed(2)}</span>
+                          <span className="text-blue-400 text-[10px] sm:text-xs">Bs {toBs(item.unit_price).toFixed(2)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <InputText
                           ref={(el) => { if (el) qtyInputRefs.current[index] = el; else delete qtyInputRefs.current[index]; }}
                           type="number"
@@ -497,7 +497,6 @@ const SalesManager = () => {
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
-                              // If there's a next item, focus its qty; otherwise focus payment
                               if (qtyInputRefs.current[index + 1]) {
                                 qtyInputRefs.current[index + 1].focus();
                                 qtyInputRefs.current[index + 1].select();
@@ -506,10 +505,10 @@ const SalesManager = () => {
                               }
                             }
                           }}
-                          className="w-24 text-center py-1.5"
+                          className="w-16 sm:w-20 text-center py-1 px-1 text-sm bg-black/50"
                         />
-                        <Button variant="icon" type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:bg-red-500/10 mb-1.5">
-                          <Trash2 size={18} />
+                        <Button variant="ghost" size="sm" type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:bg-red-500/10 p-1 sm:p-2">
+                          <Trash2 size={16} />
                         </Button>
                       </div>
                     </div>
@@ -517,9 +516,9 @@ const SalesManager = () => {
                 )}
               </div>
 
-              <div className="border-t border-white/10 pt-4 mt-auto">
-                <div className="mb-4">
-                  <Label>Método de Pago <KBD>F5</KBD></Label>
+              <div className="border-t border-white/10 pt-3 mt-auto">
+                <div className="mb-3">
+                  <Label className="text-xs sm:text-sm">Método de Pago <KBD>F5</KBD></Label>
                   <select
                     ref={paymentSelectRef}
                     value={paymentMethod}
@@ -530,7 +529,7 @@ const SalesManager = () => {
                         submitBtnRef.current?.focus();
                       }
                     }}
-                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition"
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition text-sm"
                     required
                   >
                     <option value="Efectivo">Efectivo</option>
@@ -540,25 +539,25 @@ const SalesManager = () => {
                     <option value="Pago Movil">Pago Móvil</option>
                   </select>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between items-end">
-                    <span className="text-gray-400">Total USD:</span>
-                    <div className="text-3xl font-bold text-amber-500">${currentTotal.toFixed(2)}</div>
+                <div className="flex items-end justify-between">
+                  <div className="text-left">
+                     <span className="block text-xs text-gray-400">Total Bs</span>
+                     <div className="text-lg sm:text-xl font-bold text-blue-400 leading-none mt-1">Bs {toBs(currentTotal).toFixed(2)}</div>
                   </div>
-                  <div className="flex justify-between items-end">
-                    <span className="text-gray-400">Total Bs:</span>
-                    <div className="text-2xl font-bold text-blue-400">Bs {toBs(currentTotal).toFixed(2)}</div>
+                  <div className="text-right">
+                     <span className="block text-xs text-gray-400">Total USD</span>
+                     <div className="text-2xl sm:text-3xl font-bold text-amber-500 leading-none mt-1">${currentTotal.toFixed(2)}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3 mt-auto">
-              <Button variant="secondary" type="button" onClick={cancelForm} className="w-1/3 py-3">
+            <div className="flex gap-2 sm:gap-3 mt-auto">
+              <Button variant="secondary" type="button" onClick={cancelForm} className="w-1/3 py-2 sm:py-3 text-sm">
                 Cancelar
               </Button>
-              <Button ref={submitBtnRef} variant="primary" type="submit" disabled={isLoading || items.length === 0} className="w-2/3 py-3">
-                {isLoading ? "Procesando..." : <><Check size={20} /> Procesar Venta <KBD>F4</KBD></>}
+              <Button ref={submitBtnRef} variant="primary" type="submit" disabled={isLoading || items.length === 0} className="w-2/3 py-2 sm:py-3 text-sm">
+                {isLoading ? "Procesando..." : <><Check size={18} className="mr-1" /> Procesar <span className="hidden sm:inline">Venta</span> <KBD>F4</KBD></>}
               </Button>
             </div>
           </form>
