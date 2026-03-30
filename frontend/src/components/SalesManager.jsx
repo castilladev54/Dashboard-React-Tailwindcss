@@ -69,18 +69,28 @@ const SalesManager = () => {
       return;
     }
 
-    const existingItemIndex = items.findIndex((item) => item.product_id === product._id);
-    if (existingItemIndex >= 0) {
-      const newItems = [...items];
-      if (newItems[existingItemIndex].quantity + 1 > product.stock) {
-        toast.error(`No hay más stock disponible de ${product.name}`);
-        return;
+    setItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex((item) => item.product_id === product._id);
+      if (existingItemIndex >= 0) {
+        const newItems = [...prevItems];
+        if (newItems[existingItemIndex].quantity + 1 > product.stock) {
+          setTimeout(() => toast.error(`No hay más stock disponible de ${product.name}`), 0);
+          return prevItems;
+        }
+        newItems[existingItemIndex].quantity += 1;
+        return newItems;
+      } else {
+        return [...prevItems, { 
+          product_id: product._id, 
+          name: product.name, 
+          quantity: 1, 
+          unit_price: product.price, 
+          maxStock: product.stock, 
+          unit_type: product.unit_type || "unidad" 
+        }];
       }
-      newItems[existingItemIndex].quantity += 1;
-      setItems(newItems);
-    } else {
-      setItems([...items, { product_id: product._id, name: product.name, quantity: 1, unit_price: product.price, maxStock: product.stock, unit_type: product.unit_type || "unidad" }]);
-    }
+    });
+
     setCartPulse(true);
     setTimeout(() => setCartPulse(false), 300);
   };
