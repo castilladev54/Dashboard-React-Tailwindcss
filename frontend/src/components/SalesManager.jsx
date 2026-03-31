@@ -87,13 +87,13 @@ const SalesManager = () => {
         newItems[existingItemIndex].quantity += quantity;
         return newItems;
       } else {
-        return [...prevItems, { 
-          product_id: product._id, 
-          name: product.name, 
-          quantity, 
-          unit_price: product.price, 
-          maxStock: product.stock, 
-          unit_type: product.unit_type || "unidad" 
+        return [...prevItems, {
+          product_id: product._id,
+          name: product.name,
+          quantity,
+          unit_price: product.price,
+          maxStock: product.stock,
+          unit_type: product.unit_type || "unidad"
         }];
       }
     });
@@ -231,8 +231,12 @@ const SalesManager = () => {
           return;
         case 'F4':
           e.preventDefault();
-          if (isFormOpen && items.length > 0 && submitBtnRef.current) {
-            submitBtnRef.current.click();
+          if (isFormOpen && items.length > 0) {
+            if (!isCartDrawerOpen) {
+              setIsCartDrawerOpen(true);
+            } else if (submitBtnRef.current) {
+              submitBtnRef.current.click();
+            }
           }
           return;
         case 'F5':
@@ -252,6 +256,7 @@ const SalesManager = () => {
           if (showHelp) { setShowHelp(false); return; }
           if (isScannerOpen) { setIsScannerOpen(false); return; }
           if (viewedSale) { setViewedSale(null); return; }
+          if (isCartDrawerOpen) { setIsCartDrawerOpen(false); return; }
           if (isFormOpen) { cancelForm(); return; }
           return;
         default:
@@ -299,7 +304,7 @@ const SalesManager = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFormOpen, viewedSale, showHelp, isScannerOpen, items, cyclePaymentMethod, clearCart, modifyLastItemQty]);
+  }, [isFormOpen, viewedSale, showHelp, isScannerOpen, isCartDrawerOpen, items, cyclePaymentMethod, clearCart, modifyLastItemQty]);
 
   const cancelForm = () => {
     setIsFormOpen(false);
@@ -417,7 +422,7 @@ const SalesManager = () => {
       {/* FORMULARIO DE NUEVA VENTA FULLSCREEN RESPONSIBLE */}
       <AnimatePresence>
         {isFormOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
@@ -425,17 +430,17 @@ const SalesManager = () => {
             className="fixed inset-0 z-50 bg-[#0f0f13] flex flex-col font-sans overflow-hidden"
           >
             {/* TOP BAR: Resumen del Carrito */}
-            <div 
+            <div
               className="bg-[#1a1a24] border-b border-orange-500/20 p-3 sm:p-4 shadow-[0_4px_30px_rgba(0,0,0,0.5)] flex justify-between items-center cursor-pointer hover:bg-[#22222f] transition z-20"
               onClick={() => setIsCartDrawerOpen(true)}
             >
               <div className="flex items-center gap-2 sm:gap-4">
-                <Button variant="ghost" onClick={(e) => { e.stopPropagation(); cancelForm(); }} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition">
+                <Button variant="ghost" onClick={(e) => { e.stopPropagation(); cancelForm(); }} className="!p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition">
                   <ArrowLeft size={24} />
                 </Button>
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm text-gray-400 font-medium">Total de Venta</span>
-                  <motion.div 
+                  <motion.div
                     animate={cartPulse ? { scale: [1, 1.1, 1], color: ['#f59e0b', '#fbbf24', '#f59e0b'] } : {}}
                     transition={{ duration: 0.3 }}
                     className="text-xl sm:text-3xl font-bold text-amber-500 tracking-tight leading-none"
@@ -453,12 +458,12 @@ const SalesManager = () => {
                     {items.length}
                   </div>
                 </div>
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   className="rounded-full px-5 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-bold shadow-[0_0_15px_rgba(249,115,22,0.4)]"
                   onClick={(e) => { e.stopPropagation(); setIsCartDrawerOpen(true); }}
                 >
-                  <span className="hidden sm:inline">Pagar</span>
+                  <span className="hidden sm:inline">Pagar <KBD>F4</KBD></span>
                   <span className="sm:hidden">Pagar</span>
                 </Button>
               </div>
@@ -494,7 +499,7 @@ const SalesManager = () => {
                           }
 
                           if (code) {
-                             handleBarcodeScan(code, qty);
+                            handleBarcodeScan(code, qty);
                           }
                         }
                       }
@@ -507,9 +512,12 @@ const SalesManager = () => {
                   variant="outline"
                   onClick={() => setIsScannerOpen(true)}
                   title="Escanear (F6)"
-                  className="h-12 w-12 sm:h-14 sm:w-14 p-0 shrink-0 flex items-center justify-center bg-[#1a1a24] border-white/10 hover:bg-orange-500/10 hover:border-orange-500/30 hover:text-orange-400 rounded-xl transition"
+                  className="h-12 w-12 sm:h-14 sm:w-14 !p-0 shrink-0 flex items-center justify-center bg-[#1a1a24] border-white/10 hover:bg-orange-500/20 hover:border-orange-500/40 rounded-xl transition shadow-lg group"
                 >
-                  <Camera className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <Camera
+                    className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500 group-hover:scale-110 transition-transform"
+                    strokeWidth={2.5}
+                  />
                 </Button>
               </div>
 
@@ -522,27 +530,27 @@ const SalesManager = () => {
                       <div
                         key={product._id}
                         className={`relative rounded-2xl border transition-all duration-200 overflow-hidden group
-                          ${product.stock > 0 
-                            ? 'bg-[#1a1a24] border-white/5 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 cursor-pointer active:scale-95' 
+                          ${product.stock > 0
+                            ? 'bg-[#1a1a24] border-white/5 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 cursor-pointer active:scale-95'
                             : 'bg-red-500/5 border-red-500/10 opacity-60 cursor-not-allowed'}`}
                         onClick={() => product.stock > 0 && handleAddItem(product)}
                       >
                         <div className="p-3 sm:p-4 flex flex-col h-[110px] sm:h-[130px]">
-                           <div className="flex justify-between items-start mb-1 sm:mb-2">
-                             <div className="text-[10px] sm:text-xs font-bold text-gray-500 tracking-wider">STOCK: {product.stock}</div>
-                             {isInCart && (
-                               <div className="bg-orange-500 text-black text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
-                                  {isInCart.quantity}
-                               </div>
-                             )}
-                           </div>
-                           <h4 className="text-white font-medium text-xs sm:text-sm leading-tight mb-2 flex-1 line-clamp-2">
-                             {product.name} {product.unit_type && product.unit_type !== "unidad" ? `(${product.unit_type})` : ""}
-                           </h4>
-                           <div className="flex justify-between items-end mt-auto">
-                             <div className="text-[10px] sm:text-xs text-blue-400 font-medium">Bs {toBs(product.price).toFixed(2)}</div>
-                             <div className="text-orange-500 font-bold text-base sm:text-lg leading-none">${Number(product.price).toFixed(2)}</div>
-                           </div>
+                          <div className="flex justify-between items-start mb-1 sm:mb-2">
+                            <div className="text-[10px] sm:text-xs font-bold text-gray-500 tracking-wider">STOCK: {product.stock}</div>
+                            {isInCart && (
+                              <div className="bg-orange-500 text-black text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                {isInCart.quantity}
+                              </div>
+                            )}
+                          </div>
+                          <h4 className="text-white font-medium text-xs sm:text-sm leading-tight mb-2 flex-1 line-clamp-2">
+                            {product.name} {product.unit_type && product.unit_type !== "unidad" ? `(${product.unit_type})` : ""}
+                          </h4>
+                          <div className="flex justify-between items-end mt-auto">
+                            <div className="text-[10px] sm:text-xs text-blue-400 font-medium">Bs {toBs(product.price).toFixed(2)}</div>
+                            <div className="text-orange-500 font-bold text-base sm:text-lg leading-none">${Number(product.price).toFixed(2)}</div>
+                          </div>
                         </div>
                       </div>
                     );
@@ -555,12 +563,12 @@ const SalesManager = () => {
             <AnimatePresence>
               {isCartDrawerOpen && (
                 <>
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     className="absolute inset-0 z-30 bg-black/60 backdrop-blur-sm"
                     onClick={() => setIsCartDrawerOpen(false)}
                   />
-                  <motion.div 
+                  <motion.div
                     initial={{ y: '-100%' }} animate={{ y: 0 }} exit={{ y: '-100%' }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                     className="absolute top-0 left-0 right-0 z-40 bg-[#1a1a24] border-b border-orange-500/30 shadow-2xl shadow-orange-500/10 rounded-b-3xl flex flex-col max-h-[90vh]"
@@ -604,9 +612,9 @@ const SalesManager = () => {
                                   />
                                 </div>
                                 <div className="text-right w-20 sm:w-24 ml-auto">
-                                   <div className="text-amber-500 font-bold text-base sm:text-lg">${((parseFloat(item.quantity) || 0) * item.unit_price).toFixed(2)}</div>
+                                  <div className="text-amber-500 font-bold text-base sm:text-lg">${((parseFloat(item.quantity) || 0) * item.unit_price).toFixed(2)}</div>
                                 </div>
-                                <Button variant="ghost" type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:bg-red-500/20 hover:text-red-300 p-2 sm:p-3 rounded-xl ml-2">
+                                <Button variant="ghost" type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:bg-red-500/20 hover:text-red-300 !p-2 sm:!p-3 rounded-xl ml-2">
                                   <Trash2 size={20} />
                                 </Button>
                               </div>
@@ -637,20 +645,20 @@ const SalesManager = () => {
                           </select>
                         </div>
                         <div className="flex flex-col gap-2 sm:gap-3">
-                           <div className="flex justify-between items-center text-lg sm:text-xl font-bold text-gray-300">
-                             <span className="text-sm sm:text-base">Total Bs</span>
-                             <span className="text-blue-400">Bs {toBs(currentTotal).toFixed(2)}</span>
-                           </div>
-                           <div className="flex justify-between items-center text-xl sm:text-2xl font-bold text-white bg-orange-500/10 p-3 rounded-xl border border-orange-500/20">
-                             <span className="text-base sm:text-lg text-orange-400">Total a Pagar</span>
-                             <span className="text-orange-500">${currentTotal.toFixed(2)}</span>
-                           </div>
+                          <div className="flex justify-between items-center text-lg sm:text-xl font-bold text-gray-300">
+                            <span className="text-sm sm:text-base">Total Bs</span>
+                            <span className="text-blue-400">Bs {toBs(currentTotal).toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xl sm:text-2xl font-bold text-white bg-orange-500/10 p-3 rounded-xl border border-orange-500/20">
+                            <span className="text-base sm:text-lg text-orange-400">Total a Pagar</span>
+                            <span className="text-orange-500">${currentTotal.toFixed(2)}</span>
+                          </div>
                         </div>
                       </div>
                       <div className="mt-4 sm:mt-6">
-                        <Button 
-                          ref={submitBtnRef} variant="primary" type="submit" 
-                          disabled={isLoading || items.length === 0} 
+                        <Button
+                          ref={submitBtnRef} variant="primary" type="submit"
+                          disabled={isLoading || items.length === 0}
                           className="w-full py-4 text-base sm:text-lg rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.3)] transition"
                         >
                           {isLoading ? "Procesando..." : <><Check size={24} className="mr-2" /> Procesar Pago <KBD>F4</KBD></>}
@@ -906,7 +914,7 @@ const SalesManager = () => {
                   <ul className="space-y-2">
                     {[
                       ['F3 ó /', 'Enfocar buscador de productos'],
-                      ['F4', 'Procesar / confirmar venta'],
+                      ['F4', 'Abrir carrito / Confirmar venta'],
                       ['F5', 'Ciclar método de pago'],
                       ['F6', 'Abrir escáner de cámara'],
                       ['F8', 'Vaciar carrito (con confirmación)'],
