@@ -10,6 +10,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, continuous = false }) => {
   const [cameraFacingMode, setCameraFacingMode] = useState("environment"); // default back camera
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [permissionError, setPermissionError] = useState(null);
+  const [multiplier, setMultiplier] = useState(1);
   const lastScanRef = useRef({ text: null, time: 0 });
 
   // Play beep sound on scan
@@ -62,7 +63,7 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, continuous = false }) => {
 
           playBeep();
           if (navigator.vibrate) navigator.vibrate(200);
-          onScan(decodedText);
+          onScan(decodedText, multiplier);
 
           if (!continuous) {
             if (scannerRef.current && scannerRef.current.isScanning) {
@@ -145,6 +146,23 @@ const BarcodeScanner = ({ onScan, onClose, isOpen, continuous = false }) => {
                  <X size={24} />
                </button>
             </div>
+          </div>
+
+          {/* Multiplier Chips Selector */}
+          <div className="flex items-center justify-center gap-2 p-3 bg-black/40 border-b border-white/5 overflow-x-auto hide-scrollbar">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mr-2">Cantidad:</span>
+            {[1, 2, 3, 5, 10, 20].map((num) => (
+              <button
+                key={num}
+                onClick={() => setMultiplier(num)}
+                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 border-2
+                  ${multiplier === num 
+                    ? "bg-orange-500 border-orange-400 text-black shadow-[0_0_15px_rgba(249,115,22,0.4)] scale-110" 
+                    : "bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:bg-white/10"}`}
+              >
+                {num}x
+              </button>
+            ))}
           </div>
 
           {/* Scanner Area */}

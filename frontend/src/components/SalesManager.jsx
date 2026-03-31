@@ -70,7 +70,7 @@ const SalesManager = () => {
     toast.success(`Tasa actualizada: 1 USD = ${tempRate} Bs`);
   };
 
-  const handleAddItem = (product) => {
+  const handleAddItem = (product, quantity = 1) => {
     if (product.stock <= 0) {
       toast.error(`El producto ${product.name} no tiene stock disponible`);
       return;
@@ -80,17 +80,17 @@ const SalesManager = () => {
       const existingItemIndex = prevItems.findIndex((item) => item.product_id === product._id);
       if (existingItemIndex >= 0) {
         const newItems = [...prevItems];
-        if (newItems[existingItemIndex].quantity + 1 > product.stock) {
+        if (newItems[existingItemIndex].quantity + quantity > product.stock) {
           setTimeout(() => toast.error(`No hay más stock disponible de ${product.name}`), 0);
           return prevItems;
         }
-        newItems[existingItemIndex].quantity += 1;
+        newItems[existingItemIndex].quantity += quantity;
         return newItems;
       } else {
         return [...prevItems, { 
           product_id: product._id, 
           name: product.name, 
-          quantity: 1, 
+          quantity, 
           unit_price: product.price, 
           maxStock: product.stock, 
           unit_type: product.unit_type || "unidad" 
@@ -150,12 +150,12 @@ const SalesManager = () => {
     }
   };
 
-  const handleBarcodeScan = async (code) => {
+  const handleBarcodeScan = async (code, qty = 1) => {
     try {
       const { product } = await fetchProductByBarcode(code);
       if (product) {
-        handleAddItem(product);
-        toast.success(`Añadido: ${product.name}`);
+        handleAddItem(product, qty);
+        toast.success(`Añadido: ${qty}x ${product.name}`);
         setSearchTerm("");
       }
     } catch (err) {
@@ -479,11 +479,23 @@ const SalesManager = () => {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        if (filteredProducts.length > 0) {
+                        if (filteredProducts.length > 0 && !searchTerm.includes('*')) {
                           handleAddItem(filteredProducts[0]);
                           setSearchTerm("");
-                        } else if (searchTerm.length >= 5) {
-                          handleBarcodeScan(searchTerm);
+                        } else if (searchTerm.length >= 2) {
+                          // Handle manual entry with * multiplier (e.g. 10*750123)
+                          let code = searchTerm;
+                          let qty = 1;
+
+                          if (searchTerm.includes('*')) {
+                            const parts = searchTerm.split('*');
+                            qty = parseFloat(parts[0]) || 1;
+                            code = parts[1] || "";
+                          }
+
+                          if (code) {
+                             handleBarcodeScan(code, qty);
+                          }
                         }
                       }
                     }}
