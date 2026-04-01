@@ -1,33 +1,64 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Plus, Edit2, Trash2, Check } from "lucide-react";
+import { Tag, Plus } from "lucide-react";
 import { useCategoryStore } from "../store/categoryStore";
-import Button from "./atoms/Button";
-import InputText from "./atoms/InputText";
-import TextArea from "./atoms/TextArea";
-import Label from "./atoms/Label";
-import Pagination from "./Pagination";
-import Modal from "./molecules/Modal";
 import toast from "react-hot-toast";
+
+import Button from "./atoms/Button";
+import Modal from "./molecules/Modal";
+import SectionHeader from "./molecules/SectionHeader";
+import ConfirmDialog from "./molecules/ConfirmDialog";
+import FormField from "./molecules/FormField";
+import DataTable from "./organisms/DataTable";
 
 const ITEMS_PER_PAGE = 10;
 
+const COLUMNS = [
+  {
+    key: "name",
+    label: "Nombre",
+    render: (val, row) => (
+      <div>
+        <p className="font-semibold text-white text-sm sm:text-base">{val}</p>
+        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">ID: {row._id?.slice(-6)}</p>
+      </div>
+    ),
+  },
+  {
+    key: "description",
+    label: "Descripción",
+    headerClassName: "hidden md:table-cell",
+    className: "hidden md:table-cell text-gray-400 max-w-xs truncate",
+  },
+];
+
+const EMPTY_FORM = { name: "", description: "" };
+
 const CategoryManager = () => {
-  const { categories, isLoading, error, fetchCategories, createCategory, updateCategory, deleteCategory } = useCategoryStore();
-  
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const {
+    categories,
+    isLoading,
+    error,
+    fetchCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+  } = useCategoryStore();
 
-  const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
-  const currentCategories = categories.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-  const [editingId, setEditingId] = useState(null);
-  
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [isFormOpen, setIsFormOpen]     = useState(false);
+  const [editingId, setEditingId]       = useState(null);
+  const [formData, setFormData]         = useState(EMPTY_FORM);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [currentPage, setCurrentPage]   = useState(1);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+  const totalPages       = Math.ceil(categories.length / ITEMS_PER_PAGE);
+  const currentCategories = categories.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
+  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+
+  /* ── Handlers ── */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -37,17 +68,6 @@ const CategoryManager = () => {
     setEditingId(category._id);
     setFormData({ name: category.name, description: category.description });
     setIsFormOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("¿Seguro que deseas eliminar esta categoría?")) {
-      try {
-        await deleteCategory(id);
-        toast.success("Categoría eliminada exitosamente");
-      } catch (err) {
-        toast.error(error || "Error al eliminar la categoría. ¿Tiene productos activos?");
-      }
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -60,151 +80,109 @@ const CategoryManager = () => {
         await createCategory(formData);
         toast.success("Categoría creada");
       }
-      setIsFormOpen(false);
-      setEditingId(null);
-      setFormData({ name: "", description: "" });
-    } catch (err) {
+      closeForm();
+    } catch {
       toast.error(error || "Ocurrió un error. Intenta de nuevo.");
     }
   };
 
-  const cancelEdit = () => {
-    setIsFormOpen(false);
-    setEditingId(null);
-    setFormData({ name: "", description: "" });
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteCategory(deleteTarget._id);
+      toast.success("Categoría eliminada exitosamente");
+    } catch {
+      toast.error(error || "Error al eliminar la categoría. ¿Tiene productos activos?");
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
-  return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
-          Gestión de <span className="text-orange-500">Categorías</span>
-        </h2>
-        
-        {!isFormOpen && (
-          <Button variant="primary" onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto">
-            <Plus size={20} />
-            Nueva Categoría
-          </Button>
-        )}
-      </div>
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingId(null);
+    setFormData(EMPTY_FORM);
+  };
 
-      <Modal 
-        isOpen={isFormOpen} 
-        onClose={cancelEdit} 
+  /* ── Render ── */
+  return (
+    <section
+      aria-labelledby="category-heading"
+      className="w-full max-w-4xl mx-auto p-4 sm:p-6"
+    >
+      <SectionHeader
+        id="category-heading"
+        title={<>Gestión de <span className="text-orange-500">Categorías</span></>}
+        onAdd={() => setIsFormOpen(true)}
+        addLabel={<><Plus size={18} /> Nueva Categoría</>}
+      />
+
+      {error && !isFormOpen && (
+        <p role="alert" className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
+          {error}
+        </p>
+      )}
+
+      <DataTable
+        columns={COLUMNS}
+        data={currentCategories}
+        isLoading={isLoading && !isFormOpen}
+        onEdit={handleEdit}
+        onDelete={setDeleteTarget}
+        emptyMessage="No hay categorías"
+        emptyDetail="Aún no has agregado ninguna categoría a tu inventario."
+        emptyAction={{ label: "Agregar mi primera categoría", onClick: () => setIsFormOpen(true) }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+
+      {/* Formulario */}
+      <Modal
+        isOpen={isFormOpen}
+        onClose={closeForm}
         title={editingId ? "Editar Categoría" : "Agregar Nueva Categoría"}
+        icon={<Tag size={20} />}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Nombre de la categoría</Label>
-            <InputText 
-              type="text" 
-              name="name" 
-              value={formData.name} 
-              onChange={handleInputChange} 
-              required
-              placeholder="Ej. Laptops, Teléfonos..."
-            />
-          </div>
-          
-          <div>
-            <Label>Descripción</Label>
-            <TextArea 
-              name="description" 
-              value={formData.description} 
-              onChange={handleInputChange} 
-              required
-              placeholder="Breve descripción de la categoría..."
-              rows="3"
-            />
-          </div>
-
+          <FormField
+            label="Nombre de la categoría"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            required
+            placeholder="Ej. Laptops, Teléfonos..."
+          />
+          <FormField
+            as="textarea"
+            label="Descripción"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+            placeholder="Breve descripción de la categoría..."
+            rows={3}
+          />
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" type="button" onClick={cancelEdit}>
+            <Button variant="secondary" type="button" onClick={closeForm}>
               Cancelar
             </Button>
             <Button variant="primary" type="submit" isLoading={isLoading}>
-              <Check size={18} /> {editingId ? "Actualizar" : "Guardar"}
+              {editingId ? "Actualizar" : "Guardar"}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* ERROR HANDLER */}
-      {error && !isFormOpen && (
-        <div className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-           {error}
-        </div>
-      )}
-
-      {/* DATA TABLE / LIST */}
-      <div className="bg-[#1a1a24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-        {isLoading && !isFormOpen ? (
-           <div className="p-8 text-center text-gray-400">
-             Cargando categorías...
-           </div>
-        ) : categories.length === 0 ? (
-           <div className="p-12 text-center">
-             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-gray-400 mb-4">
-               <Plus size={30} />
-             </div>
-             <h3 className="text-xl font-bold text-white mb-2">No hay categorías</h3>
-             <p className="text-gray-400 mb-6">Aún no has agregado ninguna categoría a tu inventario.</p>
-             <Button variant="outline" onClick={() => setIsFormOpen(true)}>
-                <Plus size={18} />
-                Agregar mi primera categoría
-              </Button>
-           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-xs sm:text-sm uppercase tracking-wider">
-                  <th className="px-4 py-3 sm:px-6 sm:py-4 font-medium">Nombre</th>
-                  <th className="hidden md:table-cell px-6 py-4 font-medium">Descripción</th>
-                  <th className="px-4 py-3 sm:px-6 sm:py-4 font-medium text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {currentCategories.map((cat, index) => (
-                  <motion.tr 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    key={cat._id} 
-                    className="hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="px-4 py-3 sm:px-6 sm:py-4">
-                      <div className="font-semibold text-white text-sm sm:text-base">{cat.name}</div>
-                      <div className="text-[10px] sm:text-xs text-gray-500 mt-1">ID: {cat._id.slice(-6)}</div>
-                    </td>
-                    <td className="hidden md:table-cell px-6 py-4 text-gray-400 max-w-xs truncate" title={cat.description}>
-                      {cat.description}
-                    </td>
-                    <td className="px-4 py-3 sm:px-6 sm:py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <Button variant="icon" onClick={() => handleEdit(cat)} title="Editar" className="text-blue-400 hover:bg-blue-500/10 p-1.5 sm:p-2">
-                          <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-                        </Button>
-                        <Button variant="icon" onClick={() => handleDelete(cat._id)} title="Eliminar" className="text-red-400 hover:bg-red-500/10 p-1.5 sm:p-2">
-                          <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-                        </Button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <Pagination 
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+      {/* Confirmación de borrado */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        message={`¿Eliminar "${deleteTarget?.name}"?`}
+        detail="Esta acción no se puede deshacer. Las categorías con productos activos no pueden eliminarse."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        isLoading={isLoading}
+      />
+    </section>
   );
 };
 

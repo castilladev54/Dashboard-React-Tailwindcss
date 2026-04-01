@@ -1,354 +1,375 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Plus, Edit2, Trash2, Check, PackageOpen } from "lucide-react";
-import { useProductStore } from "../store/productStore";
+import { Plus, PackageOpen, Camera, ScanBarcode, Tag as TagIcon } from "lucide-react";
+import { useProductStore }  from "../store/productStore";
 import { useCategoryStore } from "../store/categoryStore";
 import { useCurrencyStore } from "../store/currencyStore";
-import Button from "./atoms/Button";
-import InputText from "./atoms/InputText";
-import TextArea from "./atoms/TextArea";
-import Label from "./atoms/Label";
-import Pagination from "./Pagination";
-import Modal from "./molecules/Modal";
 import toast from "react-hot-toast";
-import BarcodeScanner from "./BarcodeScanner";
-import { Camera, ScanBarcode } from "lucide-react";
 
+import Button       from "./atoms/Button";
+import Badge        from "./atoms/Badge";
+import Modal        from "./molecules/Modal";
+import FormField    from "./molecules/FormField";
+import SectionHeader from "./molecules/SectionHeader";
+import ConfirmDialog from "./molecules/ConfirmDialog";
+import DataTable    from "./organisms/DataTable";
+import BarcodeScanner from "./BarcodeScanner";
+
+/* ─── Constantes ─────────────────────────────────────────── */
 const ITEMS_PER_PAGE = 10;
 
+const EMPTY_FORM = {
+  name: "", description: "", price: "", stock: "",
+  category: "", unit_type: "unidad", barcode: "",
+};
+
+const UNIT_OPTIONS = [
+  { value: "unidad", label: "Unidad (ud)"      },
+  { value: "kg",     label: "Kilogramos (kg)"  },
+  { value: "litro",  label: "Litros (l)"       },
+  { value: "metro",  label: "Metros (m)"       },
+];
+
+/** Devuelve la variante de Badge según el stock */
+const stockVariant = (stock) => {
+  if (stock > 10) return "success";
+  if (stock > 0)  return "warning";
+  return "danger";
+};
+
+/** Formato de unidades para mostrar en la tabla */
+const formatUnit = (stock, unit_type) => {
+  if (unit_type && unit_type !== "unidad") return unit_type;
+  return stock === 1 ? "unidad" : "unidades";
+};
+
+/* ─── Definición de columnas ─────────────────────────────── */
+const buildColumns = (toBs) => [
+  {
+    key: "name",
+    label: "Producto",
+    render: (val, row) => (
+      <div>
+        <p className="font-semibold text-white text-sm sm:text-base">{val}</p>
+        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">ID: {row._id?.slice(-6)}</p>
+      </div>
+    ),
+  },
+  {
+    key: "category",
+    label: "Categoría",
+    headerClassName: "hidden md:table-cell",
+    className: "hidden md:table-cell",
+    render: (val) => (
+      <span className="bg-white/5 px-2 py-1 rounded-md text-xs border border-white/10 text-gray-400">
+        {val?.name || "Sin Categoría"}
+      </span>
+    ),
+  },
+  {
+    key: "price",
+    label: "Precio",
+    render: (val) => (
+      <div>
+        <p className="text-amber-500 font-medium text-sm sm:text-base">${Number(val).toFixed(2)}</p>
+        <p className="text-[10px] sm:text-xs text-blue-400 mt-0.5">Bs {toBs(val).toFixed(2)}</p>
+      </div>
+    ),
+  },
+  {
+    key: "stock",
+    label: "Stock",
+    render: (val, row) => (
+      <Badge variant={stockVariant(val)}>
+        {val}{" "}
+        <span className="hidden sm:inline">{formatUnit(val, row.unit_type)}</span>
+      </Badge>
+    ),
+  },
+  {
+    key: "barcode",
+    label: "Barcode",
+    headerClassName: "hidden lg:table-cell",
+    className: "hidden lg:table-cell font-mono text-xs text-gray-400",
+  },
+];
+
+/* ─── Componente ─────────────────────────────────────────── */
 const ProductManager = () => {
-  const { products, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductStore();
+  const { products, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } =
+    useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
-  const { exchangeRate, toBs } = useCurrencyStore();
-  
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const { toBs } = useCurrencyStore();
 
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
-  const currentProducts = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-  const [editingId, setEditingId] = useState(null);
-  
-  const [formData, setFormData] = useState({ 
-    name: "", 
-    description: "", 
-    price: "", 
-    stock: "", 
-    category: "",
-    unit_type: "unidad",
-    barcode: ""
-  });
-
+  const [isFormOpen, setIsFormOpen]     = useState(false);
+  const [editingId, setEditingId]       = useState(null);
+  const [formData, setFormData]         = useState(EMPTY_FORM);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [currentPage, setCurrentPage]   = useState(1);
+
+  const totalPages      = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const currentProducts = products.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
 
-  const handleInputChange = (e) => {
+  /* ── Handlers ── */
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEdit = (product) => {
     setEditingId(product._id);
-    setFormData({ 
-      name: product.name, 
-      description: product.description || "", 
-      price: product.price, 
-      stock: product.stock, 
-      category: product.category?._id || product.category || "",
-      unit_type: product.unit_type || "unidad",
-      barcode: product.barcode || ""
+    setFormData({
+      name:        product.name,
+      description: product.description || "",
+      price:       product.price,
+      stock:       product.stock,
+      category:    product.category?._id || product.category || "",
+      unit_type:   product.unit_type || "unidad",
+      barcode:     product.barcode || "",
     });
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("¿Seguro que deseas eliminar este producto?")) {
-      try {
-        await deleteProduct(id);
-        toast.success("Producto eliminado exitosamente");
-      } catch (err) {
-        toast.error(error || "Error al eliminar el producto.");
-      }
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formattedData = {
-      ...formData,
-      price: Number(formData.price),
-      stock: Number(formData.stock)
-    };
-
+    const payload = { ...formData, price: Number(formData.price), stock: Number(formData.stock) };
     try {
       if (editingId) {
-        await updateProduct(editingId, formattedData);
+        await updateProduct(editingId, payload);
         toast.success("Producto actualizado");
       } else {
-        await createProduct(formattedData);
+        await createProduct(payload);
         toast.success("Producto creado");
       }
-      setIsFormOpen(false);
-      setEditingId(null);
-      setFormData({ name: "", description: "", price: "", stock: "", category: "", unit_type: "unidad", barcode: "" });
-    } catch (err) {
+      closeForm();
+    } catch {
       toast.error(error || "Ocurrió un error. Intenta de nuevo.");
     }
   };
 
-  const cancelEdit = () => {
-    setIsFormOpen(false);
-    setEditingId(null);
-    setFormData({ name: "", description: "", price: "", stock: "", category: "", unit_type: "unidad", barcode: "" });
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteProduct(deleteTarget._id);
+      toast.success("Producto eliminado exitosamente");
+    } catch {
+      toast.error(error || "Error al eliminar el producto.");
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
-  return (
-    <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">
-          Gestión de <span className="text-orange-500">Productos</span>
-        </h2>
-        
-        {!isFormOpen && (
-          <Button variant="primary" onClick={() => setIsFormOpen(true)} className="w-full sm:w-auto text-sm sm:text-base">
-            <Plus size={20} />
-            Nuevo Producto
-          </Button>
-        )}
-      </div>
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingId(null);
+    setFormData(EMPTY_FORM);
+  };
 
+  /* ── Estilos compartidos para selects del formulario ── */
+  const selectClass =
+    "w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white " +
+    "focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition";
+
+  /* ── Render ── */
+  return (
+    <section
+      aria-labelledby="products-heading"
+      className="w-full max-w-6xl mx-auto p-4 sm:p-6"
+    >
+      <SectionHeader
+        id="products-heading"
+        title={<>Gestión de <span className="text-orange-500">Productos</span></>}
+        onAdd={() => setIsFormOpen(true)}
+        addLabel={<><Plus size={18} /> Nuevo Producto</>}
+      />
+
+      {error && !isFormOpen && (
+        <p role="alert" className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
+          {error}
+        </p>
+      )}
+
+      <DataTable
+        columns={buildColumns(toBs)}
+        data={currentProducts}
+        isLoading={isLoading && !isFormOpen}
+        onEdit={handleEdit}
+        onDelete={setDeleteTarget}
+        emptyMessage="No hay productos"
+        emptyIcon={<PackageOpen size={30} />}
+        emptyDetail="Aún no has agregado ningún producto al inventario."
+        emptyAction={{ label: "Agregar mi primer producto", onClick: () => setIsFormOpen(true) }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+
+      {/* ── Formulario ── */}
       <Modal
         isOpen={isFormOpen}
-        onClose={cancelEdit}
+        onClose={closeForm}
         title={editingId ? "Editar Producto" : "Agregar Nuevo Producto"}
+        icon={<TagIcon size={20} />}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-             <div>
-               <Label>Nombre del producto</Label>
-               <InputText 
-                 type="text" 
-                 name="name" 
-                 value={formData.name} 
-                 onChange={handleInputChange} 
-                 required
-                 placeholder="Ej. iPhone 15 Pro"
-               />
-             </div>
 
-             <div>
-               <Label>Categoría</Label>
-               <select 
-                 name="category" 
-                 value={formData.category} 
-                 onChange={handleInputChange} 
-                 required
-                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
-               >
-                 <option value="" disabled>Selecciona una categoría</option>
-                 {categories.map(cat => (
-                   <option key={cat._id} value={cat._id}>{cat.name}</option>
-                 ))}
-               </select>
-             </div>
-
-             <div>
-               <Label>Precio ($)</Label>
-               <InputText 
-                 type="number" 
-                 name="price" 
-                 value={formData.price} 
-                 onChange={handleInputChange} 
-                 required
-                 min="0"
-                 step="0.01"
-                 placeholder="Ej. 999.99"
-               />
-             </div>
-
-             <div>
-               <Label>Stock</Label>
-               <InputText 
-                 type="number" 
-                 name="stock" 
-                 value={formData.stock} 
-                 onChange={handleInputChange} 
-                 required
-                 min="0"
-                 step="0.01"
-                 placeholder="Ej. 50"
-               />
-             </div>
-
-             <div>
-                <Label>Código de Barras (Opcional)</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <ScanBarcode className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
-                    <InputText 
-                      type="text" 
-                      name="barcode" 
-                      value={formData.barcode} 
-                      onChange={handleInputChange} 
-                      placeholder="Escanear o escribir..."
-                      className="pl-10"
-                    />
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    type="button" 
-                    onClick={() => setIsScannerOpen(true)}
-                    className="px-3 bg-white/5 border border-white/10 hover:bg-white/10"
-                  >
-                    <Camera size={20} />
-                  </Button>
-                </div>
-              </div>
-
-             <div>
-               <Label>Unidad de Medida</Label>
-               <select 
-                 name="unit_type" 
-                 value={formData.unit_type} 
-                 onChange={handleInputChange} 
-                 required
-                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
-               >
-                 <option value="unidad">Unidad (ud)</option>
-                 <option value="kg">Kilogramos (kg)</option>
-                 <option value="litro">Litros (l)</option>
-                 <option value="metro">Metros (m)</option>
-               </select>
-             </div>
-          </div>
-          
-          <div>
-            <Label>Descripción</Label>
-            <TextArea 
-              name="description" 
-              value={formData.description} 
-              onChange={handleInputChange} 
-              placeholder="Detalles sobre el producto..."
-              rows="3"
+            <FormField
+              label="Nombre del producto"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Ej. iPhone 15 Pro"
             />
+
+            {/* Categoría — select nativo */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="product-category" className="block text-sm font-medium text-gray-300 mb-1">
+                Categoría <span className="text-orange-500" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="product-category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className={selectClass}
+              >
+                <option value="" disabled>Selecciona una categoría</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <FormField
+              label="Precio ($)"
+              name="price"
+              type="number"
+              value={formData.price}
+              onChange={handleChange}
+              required
+              min="0"
+              step="0.01"
+              placeholder="Ej. 999.99"
+            />
+
+            <FormField
+              label="Stock"
+              name="stock"
+              type="number"
+              value={formData.stock}
+              onChange={handleChange}
+              required
+              min="0"
+              step="0.01"
+              placeholder="Ej. 50"
+            />
+
+            {/* Código de barras con botón escáner */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="product-barcode" className="block text-sm font-medium text-gray-300 mb-1">
+                Código de Barras <span className="text-gray-500 text-xs">(Opcional)</span>
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <ScanBarcode
+                    size={18}
+                    aria-hidden="true"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                  />
+                  <input
+                    id="product-barcode"
+                    name="barcode"
+                    type="text"
+                    value={formData.barcode}
+                    onChange={handleChange}
+                    placeholder="Escanear o escribir..."
+                    className="w-full pl-9 pr-3 py-3 bg-black/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  aria-label="Abrir escáner de cámara"
+                  className="px-3"
+                >
+                  <Camera size={20} />
+                </Button>
+              </div>
+            </div>
+
+            {/* Unidad de medida */}
+            <div className="flex flex-col gap-1">
+              <label htmlFor="product-unit" className="block text-sm font-medium text-gray-300 mb-1">
+                Unidad de Medida <span className="text-orange-500" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="product-unit"
+                name="unit_type"
+                value={formData.unit_type}
+                onChange={handleChange}
+                required
+                className={selectClass}
+              >
+                {UNIT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          <FormField
+            as="textarea"
+            label="Descripción"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Detalles sobre el producto..."
+            rows={3}
+          />
 
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" type="button" onClick={cancelEdit}>
+            <Button variant="secondary" type="button" onClick={closeForm}>
               Cancelar
             </Button>
             <Button variant="primary" type="submit" isLoading={isLoading}>
-              <Check size={18} /> {editingId ? "Actualizar" : "Guardar"}
+              {editingId ? "Actualizar" : "Guardar"}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* ERROR HANDLER */}
-      {error && !isFormOpen && (
-        <div className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-           {error}
-        </div>
-      )}
+      {/* ── Confirmación de borrado ── */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        message={`¿Eliminar "${deleteTarget?.name}"?`}
+        detail="Esta acción no se puede deshacer y eliminará el producto del inventario."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        isLoading={isLoading}
+      />
 
-      {/* DATA TABLE / LIST */}
-      <div className="bg-[#1a1a24] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-        {isLoading && !isFormOpen ? (
-           <div className="p-8 text-center text-gray-400">
-             Cargando productos...
-           </div>
-        ) : products.length === 0 ? (
-           <div className="p-12 text-center">
-             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-gray-400 mb-4">
-               <PackageOpen size={30} />
-             </div>
-             <h3 className="text-xl font-bold text-white mb-2">No hay productos</h3>
-             <p className="text-gray-400 mb-6">Aún no has agregado ningún producto al inventario.</p>
-             <Button variant="outline" onClick={() => setIsFormOpen(true)}>
-               <Plus size={18} />
-               Agregar mi primer producto
-             </Button>
-           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-black/20 text-gray-400 text-xs sm:text-sm uppercase tracking-wider">
-                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Producto</th>
-                  <th className="hidden md:table-cell px-6 py-4 font-medium">Categoría</th>
-                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Precio</th>
-                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-center sm:text-left">Stock</th>
-                  <th className="hidden lg:table-cell px-6 py-4 font-medium">Barcode</th>
-                  <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {currentProducts.map((prod, index) => (
-                  <motion.tr 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    key={prod._id} 
-                    className="hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="px-3 py-3 sm:px-6 sm:py-4">
-                      <div className="font-semibold text-white text-sm sm:text-base">{prod.name}</div>
-                      <div className="text-[10px] sm:text-xs text-gray-500 mt-1">ID: {prod._id.slice(-6)}</div>
-                    </td>
-                    <td className="hidden md:table-cell px-6 py-4 text-gray-400">
-                       <span className="bg-white/5 px-2 py-1 rounded-md text-xs border border-white/10">
-                          {prod.category?.name || "Sin Categoría"}
-                       </span>
-                    </td>
-                    <td className="px-3 py-3 sm:px-6 sm:py-4">
-                      <div className="text-amber-500 font-medium text-sm sm:text-base">${Number(prod.price).toFixed(2)}</div>
-                      <div className="text-[10px] sm:text-xs text-blue-400 mt-0.5">Bs {toBs(prod.price).toFixed(2)}</div>
-                    </td>
-                    <td className="px-3 py-3 sm:px-6 sm:py-4 text-center sm:text-left">
-                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${prod.stock > 10 ? 'bg-green-500/10 text-green-400 border border-green-500/20' : prod.stock > 0 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                          {prod.stock} <span className="hidden sm:inline">{prod.unit_type && prod.unit_type !== 'unidad' ? prod.unit_type : (prod.stock === 1 ? 'unidad' : 'unidades')}</span>
-                       </span>
-                    </td>
-                    <td className="hidden lg:table-cell px-6 py-4 font-mono text-xs text-gray-400">
-                        {prod.barcode || "—"}
-                    </td>
-                    <td className="px-3 py-3 sm:px-6 sm:py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <Button variant="icon" onClick={() => handleEdit(prod)} title="Editar" className="text-blue-400 hover:bg-blue-500/10 p-1.5 sm:p-2">
-                          <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-                        </Button>
-                        <Button variant="icon" onClick={() => handleDelete(prod._id)} title="Eliminar" className="text-red-400 hover:bg-red-500/10 p-1.5 sm:p-2">
-                          <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-                        </Button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <Pagination 
-               currentPage={currentPage}
-               totalPages={totalPages}
-               onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-      </div>
-      <BarcodeScanner 
-        isOpen={isScannerOpen} 
-        onClose={() => setIsScannerOpen(false)} 
+      {/* ── Escáner de código de barras ── */}
+      <BarcodeScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
         onScan={(code) => {
-          setFormData(prev => ({ ...prev, barcode: code }));
+          setFormData((prev) => ({ ...prev, barcode: code }));
           setIsScannerOpen(false);
           toast.success(`Código detectado: ${code}`);
         }}
       />
-    </div>
+    </section>
   );
 };
 
