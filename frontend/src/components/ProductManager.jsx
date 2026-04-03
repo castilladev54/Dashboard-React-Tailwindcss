@@ -14,13 +14,22 @@ import ConfirmDialog from "./molecules/ConfirmDialog";
 import DataTable    from "./organisms/DataTable";
 import BarcodeScanner from "./BarcodeScanner";
 
-/* ─── Constantes ─────────────────────────────────────────── */
 const ITEMS_PER_PAGE = 10;
 
 const EMPTY_FORM = {
   name: "", description: "", price: "", stock: "",
   category: "", unit_type: "unidad", barcode: "",
+  new_stock: "", stock_reason: "",
 };
+
+const STOCK_REASONS = [
+  { value: "initial_count", label: "Inventario Inicial" },
+  { value: "damaged", label: "Dañado / Merma" },
+  { value: "stolen", label: "Extravío / Robo" },
+  { value: "expired", label: "Vencido" },
+  { value: "correction", label: "Corrección" },
+  { value: "other", label: "Otro motivo" },
+];
 
 const UNIT_OPTIONS = [
   { value: "unidad", label: "Unidad (ud)"      },
@@ -134,13 +143,37 @@ const ProductManager = () => {
       category:    product.category?._id || product.category || "",
       unit_type:   product.unit_type || "unidad",
       barcode:     product.barcode || "",
+      new_stock:   product.stock,
+      stock_reason: "",
     });
     setIsFormOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { ...formData, price: Number(formData.price), stock: Number(formData.stock) };
+    
+    // Si estamos editando y el stock fue modificado manualmente
+    const isStockChanged = editingId && Number(formData.new_stock) !== Number(formData.stock);
+    
+    if (isStockChanged && !formData.stock_reason) {
+      return toast.error("Debe seleccionar un motivo para el ajuste de stock.");
+    }
+
+    const payload = { ...formData, price: Number(formData.price) };
+    
+    // Limpiar variables temporales y estructurar base
+    if (editingId) {
+      delete payload.stock; // no enviamos stock, sino new_stock
+      payload.new_stock = Number(formData.new_stock);
+      if (!isStockChanged) {
+        delete payload.stock_reason; // no enviar motivo si no hubo cambio
+      }
+    } else {
+      payload.stock = Number(formData.stock);
+      delete payload.new_stock;
+      delete payload.stock_reason;
+    }
+
     try {
       if (editingId) {
         await updateProduct(editingId, payload);
@@ -196,20 +229,6 @@ const ProductManager = () => {
         </p>
       )}
 
-      <DataTable
-        columns={buildColumns(toBs)}
-        data={currentProducts}
-        isLoading={isLoading && !isFormOpen}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-        emptyMessage="No hay productos"
-        emptyIcon={<PackageOpen size={30} />}
-        emptyDetail="Aún no has agregado ningún producto al inventario."
-        emptyAction={{ label: "Agregar mi primer producto", onClick: () => setIsFormOpen(true) }}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
 
       {/* ── Formulario ── */}
       <Modal
@@ -262,17 +281,59 @@ const ProductManager = () => {
               placeholder="Ej. 999.99"
             />
 
-            <FormField
-              label="Stock"
-              name="stock"
-              type="number"
-              value={formData.stock}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-              placeholder="Ej. 50"
-            />
+            {editingId ? (
+              <div className="flex flex-col gap-1 col-span-1 md:col-span-2 p-4 border border-white/5 bg-white/5 rounded-xl">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Stock en Estantería (Físico)
+                  </label>
+                  <span className="text-xs text-gray-400 bg-black/40 px-2 py-1 rounded border border-white/5">
+                    Stock actual del sistema: {formData.stock}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="number"
+                    name="new_stock"
+                    value={formData.new_stock}
+                    onChange={handleChange}
+                    required
+                    min="0"
+                    step="0.01"
+                    placeholder="Cantidad real en tienda"
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition font-bold"
+                  />
+                  
+                  {Number(formData.new_stock) !== Number(formData.stock) && (
+                    <select
+                      name="stock_reason"
+                      value={formData.stock_reason}
+                      onChange={handleChange}
+                      required
+                      className={selectClass}
+                    >
+                      <option value="" disabled>Motivo del ajuste...</option>
+                      {STOCK_REASONS.map(r => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <FormField
+                label="Stock Inicial"
+                name="stock"
+                type="number"
+                value={formData.stock}
+                onChange={handleChange}
+                required
+                min="0"
+                step="0.01"
+                placeholder="Ej. 50"
+              />
+            )}
 
             {/* Código de barras con botón escáner */}
             <div className="flex flex-col gap-1">
@@ -348,6 +409,21 @@ const ProductManager = () => {
           </div>
         </form>
       </Modal>
+
+      <DataTable
+        columns={buildColumns(toBs)}
+        data={currentProducts}
+        isLoading={isLoading && !isFormOpen}
+        onEdit={handleEdit}
+        onDelete={setDeleteTarget}
+        emptyMessage="No hay productos"
+        emptyIcon={<PackageOpen size={30} />}
+        emptyDetail="Aún no has agregado ningún producto al inventario."
+        emptyAction={{ label: "Agregar mi primer producto", onClick: () => setIsFormOpen(true) }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* ── Confirmación de borrado ── */}
       <ConfirmDialog

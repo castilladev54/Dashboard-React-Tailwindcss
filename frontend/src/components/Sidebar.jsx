@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Menu, Moon, Sun, ChevronLeft, Search, Home,
   TrendingUp, Store, ChevronDown, ClipboardCheck, Archive,
-  Bell, Settings, LogOut, Image as ImageIcon, Mic, UserPlus
+  Bell, Settings, LogOut, Image as ImageIcon, Mic, UserPlus, ShoppingBag
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -137,14 +137,6 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
                   </li>
                   <li>
                     <button
-                      onClick={() => setActiveTab("purchases")}
-                      className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'purchases' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
-                    >
-                      Compras (Entradas)
-                    </button>
-                  </li>
-                  <li>
-                    <button
                       onClick={() => setActiveTab("sales")}
                       className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'sales' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
                     >
@@ -155,14 +147,14 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
               )}
             </li>
 
-            {/* Inventario (Ajustes de Stock) */}
+            {/* Compras (Entradas) - Módulo Destacado */}
             <li>
               <button
-                onClick={() => setActiveTab("adjustments")}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'adjustments' ? 'bg-white/10 text-orange-400 font-medium' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
+                onClick={() => setActiveTab("purchases")}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'purchases' ? 'bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
               >
-                <ClipboardCheck size={22} className="shrink-0" />
-                {isOpen && <span className="font-medium whitespace-nowrap">Inventario</span>}
+                <ShoppingBag size={22} className="shrink-0" />
+                {isOpen && <span className="whitespace-nowrap">Registro de Compras</span>}
               </button>
             </li>
 
