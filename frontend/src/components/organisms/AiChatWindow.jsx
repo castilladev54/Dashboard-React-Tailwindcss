@@ -5,6 +5,10 @@ import { AiMessageBubble } from "../atoms/AiMessageBubble";
 import { AiTypingIndicator } from "../atoms/AiTypingIndicator";
 import { AiInputArea } from "../molecules/AiInputArea";
 
+const API_URL = import.meta.env.MODE === "development" 
+    ? "http://localhost:5000/api/ai/ask" 
+    : "https://backend-inventory-system.vercel.app/api/ai/ask";
+
 export const AiChatWindow = ({ onClose }) => {
     const [messages, setMessages] = useState([
         { role: "ai", content: "¡Hola! Soy tu Asesor de CastillaWeb.\n\nHe analizado tus inventarios y ventas en tiempo real. ¿En qué te ayudo a mejorar tu negocio hoy?" }
@@ -29,7 +33,7 @@ export const AiChatWindow = ({ onClose }) => {
 
         try {
             // USANDO FETCH NATIVO (Requisito estricto por seguridad en lugar de Axios)
-            const response = await fetch('http://localhost:5000/api/ai/ask', {
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
