@@ -45,5 +45,24 @@ export const usePurchaseStore = create((set) => ({
       set({ error: error.response?.data?.message || "Error al obtener el detalle de la compra", isLoading: false });
       throw error;
     }
+  },
+
+  payPurchase: async (id, paymentData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.post(`${API_URL}/${id}/pay`, paymentData);
+      
+      // Update the local purchase if found
+      set((state) => ({
+        purchases: state.purchases.map(p => 
+          p._id === id ? { ...p, ...((response.data.purchase || response.data) || {}) } : p
+        ),
+        isLoading: false
+      }));
+      return response.data.purchase || response.data;
+    } catch (error) {
+      set({ error: error.response?.data?.message || "Error al registrar el abono", isLoading: false });
+      throw error;
+    }
   }
 }));
