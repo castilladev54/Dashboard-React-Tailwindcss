@@ -8,11 +8,11 @@ import {
   TrendingUp, TrendingDown, DollarSign,
   ShoppingBag, PackageOpen, Calendar,
 } from 'lucide-react';
-import { useSaleStore }     from '../store/saleStore';
+import { useSaleStore } from '../store/saleStore';
 import { usePurchaseStore } from '../store/purchaseStore';
 
-import Spinner   from './atoms/Spinner';
-import StatCard  from './molecules/StatCard';
+import Spinner from './atoms/Spinner';
+import StatCard from './molecules/StatCard';
 import EmptyState from './molecules/EmptyState';
 
 /* ─── Estilos de tooltip compartido ─────────────────────── */
@@ -74,19 +74,19 @@ const KpiCard = ({ label, value, icon: Icon, iconColor, gradient, badge, delay }
 /* ─── Lógica de filtrado por fecha ───────────────────────── */
 const filterByDate = (items, dateFilter) => {
   if (dateFilter === 'all') return items;
-  const now   = new Date();
+  const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   return items.filter((item) => {
-    const raw  = item.createdAt || item.date;
+    const raw = item.createdAt || item.date;
     if (!raw) return false;
-    const d    = new Date(raw);
-    const day  = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const d = new Date(raw);
+    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-    if (dateFilter === 'today')  return day.getTime() === today.getTime();
-    if (dateFilter === '7days')  { const l = new Date(today); l.setDate(today.getDate() - 7);  return day >= l; }
+    if (dateFilter === 'today') return day.getTime() === today.getTime();
+    if (dateFilter === '7days') { const l = new Date(today); l.setDate(today.getDate() - 7); return day >= l; }
     if (dateFilter === '30days') { const l = new Date(today); l.setDate(today.getDate() - 30); return day >= l; }
-    if (dateFilter === 'month')  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    if (dateFilter === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     return true;
   });
 };
@@ -100,7 +100,7 @@ const fmtKey = (key) => { const [y, m, d] = key.split('-'); return `${d}/${m}/${
 
 /* ─── Componente principal ───────────────────────────────── */
 const AnalyticsManager = () => {
-  const { sales,     fetchSales,     isLoading: isLoadingSales     } = useSaleStore();
+  const { sales, fetchSales, isLoading: isLoadingSales } = useSaleStore();
   const { purchases, fetchPurchases, isLoading: isLoadingPurchases } = usePurchaseStore();
   const [dateFilter, setDateFilter] = useState('all');
 
@@ -109,10 +109,10 @@ const AnalyticsManager = () => {
   const isLoading = isLoadingSales || isLoadingPurchases;
 
   const { chartData, totalSales, totalPurchases, netProfit } = useMemo(() => {
-    const filteredSales     = filterByDate(sales, dateFilter);
+    const filteredSales = filterByDate(sales, dateFilter);
     const filteredPurchases = filterByDate(purchases, dateFilter);
 
-    const salesByDay     = {};
+    const salesByDay = {};
     const purchasesByDay = {};
     let tSales = 0, tPurchases = 0;
 
@@ -125,7 +125,14 @@ const AnalyticsManager = () => {
 
     filteredPurchases.forEach((p) => {
       const key = toDateKey(p.createdAt || p.date);
-      const cost = Number(p.total_cost) || 0;
+      // ─── FIX: usar paid_amount en lugar de total_cost ──────────────
+      // total_cost = importe total de la factura (no necesariamente pagado hoy)
+      // paid_amount = dinero realmente desembolsado (abonos acumulados)
+      // Si paid_amount no existe (registro antiguo), caer en total_cost como fallback.
+      const paidAmt = Number(p.paid_amount);
+      const totalAmt = Number(p.total_cost) || 0;
+      const cost = !isNaN(paidAmt) ? paidAmt : totalAmt;
+      // ───────────────────────────────────────────────────────────────
       purchasesByDay[key] = (purchasesByDay[key] || 0) + cost;
       tPurchases += cost;
     });
@@ -134,19 +141,19 @@ const AnalyticsManager = () => {
 
     return {
       chartData: allKeys.map((key) => {
-        const v = salesByDay[key]     || 0;
+        const v = salesByDay[key] || 0;
         const c = purchasesByDay[key] || 0;
         return {
-          dateKey:  key,
-          date:     fmtKey(key),
-          Ventas:   Number(v.toFixed(2)),
-          Compras:  Number(c.toFixed(2)),
+          dateKey: key,
+          date: fmtKey(key),
+          Ventas: Number(v.toFixed(2)),
+          Compras: Number(c.toFixed(2)),
           Ganancia: Number((v - c).toFixed(2)),
         };
       }),
-      totalSales:     tSales,
+      totalSales: tSales,
       totalPurchases: tPurchases,
-      netProfit:      tSales - tPurchases,
+      netProfit: tSales - tPurchases,
     };
   }, [sales, purchases, dateFilter]);
 
@@ -170,11 +177,11 @@ const AnalyticsManager = () => {
             aria-label="Filtrar período"
             className="bg-transparent text-white focus:outline-none cursor-pointer text-sm w-full"
           >
-            <option value="all"    className="bg-[#1a1a24]">Todo el tiempo</option>
-            <option value="today"  className="bg-[#1a1a24]">Hoy</option>
-            <option value="7days"  className="bg-[#1a1a24]">Últimos 7 días</option>
+            <option value="all" className="bg-[#1a1a24]">Todo el tiempo</option>
+            <option value="today" className="bg-[#1a1a24]">Hoy</option>
+            <option value="7days" className="bg-[#1a1a24]">Últimos 7 días</option>
             <option value="30days" className="bg-[#1a1a24]">Últimos 30 días</option>
-            <option value="month"  className="bg-[#1a1a24]">Este mes</option>
+            <option value="month" className="bg-[#1a1a24]">Este mes</option>
           </select>
         </div>
       </header>
@@ -236,12 +243,12 @@ const AnalyticsManager = () => {
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#22c55e" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0}   />
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorCompras" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#ef4444" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0}   />
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff15" vertical={false} />
@@ -249,7 +256,7 @@ const AnalyticsManager = () => {
                   <YAxis {...AXIS_PROPS} tickFormatter={(v) => `$${v}`} />
                   <Tooltip {...TOOLTIP_STYLE} />
                   <Legend iconType="circle" />
-                  <Area type="monotone" dataKey="Ventas"  stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorVentas)"  />
+                  <Area type="monotone" dataKey="Ventas" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorVentas)" />
                   <Area type="monotone" dataKey="Compras" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorCompras)" />
                 </AreaChart>
               </ResponsiveContainer>
