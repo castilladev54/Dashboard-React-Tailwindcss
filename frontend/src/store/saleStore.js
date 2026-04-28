@@ -7,14 +7,20 @@ axios.defaults.withCredentials = true;
 
 export const useSaleStore = create((set) => ({
   sales: [],
+  pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
   isLoading: false,
   error: null,
 
-  fetchSales: async () => {
+  fetchSales: async (page = 1, limit = 10) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(API_URL);
-      set({ sales: response.data.sales || response.data, isLoading: false });
+      const response = await axios.get(`${API_URL}?page=${page}&limit=${limit}`);
+      const payload = response.data;
+      set({ 
+        sales: payload.data || payload.sales || (Array.isArray(payload) ? payload : []),
+        pagination: payload.pagination || { total: 0, page, limit, totalPages: 1 },
+        isLoading: false 
+      });
     } catch (error) {
       set({ error: error.response?.data?.message || "Error al obtener el historial de ventas", isLoading: false });
     }

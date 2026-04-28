@@ -632,7 +632,7 @@ const buildHistoryColumns = (onViewDetail, toBs) => [
    COMPONENTE PRINCIPAL
 ════════════════════════════════════════════════════════════ */
 const SalesManager = () => {
-  const { sales, isLoading, error, fetchSales, createSale, fetchSaleById } = useSaleStore();
+  const { sales, pagination, isLoading, error, fetchSales, createSale, fetchSaleById } = useSaleStore();
   const { products, fetchProducts, fetchProductByBarcode }                 = useProductStore();
   const { user }                                                           = useAuthStore();
   const { exchangeRate, setExchangeRate, toBs }                           = useCurrencyStore();
@@ -647,12 +647,13 @@ const SalesManager = () => {
   const [showHelp,      setShowHelp]      = useState(false);
   const [cartPulse,     setCartPulse]     = useState(false);
   const [isCartOpen,    setIsCartOpen]    = useState(false);
+  const [currentPage,   setCurrentPage]   = useState(1);
 
   const searchInputRef   = useRef(null);
   const submitBtnRef     = useRef(null);
   const paymentSelectRef = useRef(null);
 
-  useEffect(() => { fetchSales(); fetchProducts(); }, [fetchSales, fetchProducts]);
+  useEffect(() => { fetchSales(currentPage, 10); fetchProducts(); }, [fetchSales, fetchProducts, currentPage]);
 
   useEffect(() => {
     if (!isScannerOpen && isFormOpen) setTimeout(() => searchInputRef.current?.focus(), 100);
@@ -823,6 +824,8 @@ const SalesManager = () => {
     return { filteredSales: list, filteredTotal: list.reduce((a, s) => a + Number(s.total_amount || 0), 0) };
   }, [sales, dateFilter]);
 
+  const totalPages = pagination?.totalPages || 1;
+
   /* ── Render ── */
   return (
     <section aria-labelledby="sales-heading" className="w-full max-w-6xl mx-auto p-4 sm:p-6">
@@ -916,6 +919,9 @@ const SalesManager = () => {
             emptyIcon={<ShoppingCart size={30} />}
             emptyDetail={sales.length === 0 ? "El historial de ventas está vacío." : "No se encontraron ventas con el filtro seleccionado."}
             emptyAction={sales.length > 0 ? { label: "Ver todas las ventas", onClick: () => setDateFilter("all") } : undefined}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </>
       )}

@@ -36,6 +36,7 @@ const EMPTY_FORM = { name: "", description: "" };
 const CategoryManager = () => {
   const {
     categories,
+    pagination,
     isLoading,
     error,
     fetchCategories,
@@ -50,13 +51,10 @@ const CategoryManager = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [currentPage, setCurrentPage]   = useState(1);
 
-  const totalPages       = Math.ceil(categories.length / ITEMS_PER_PAGE);
-  const currentCategories = categories.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages       = pagination?.totalPages || 1;
+  const currentCategories = categories;
 
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  useEffect(() => { fetchCategories(currentPage, ITEMS_PER_PAGE); }, [fetchCategories, currentPage]);
 
   /* ── Handlers ── */
   const handleInputChange = (e) => {

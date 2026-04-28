@@ -104,7 +104,7 @@ const buildColumns = (toBs) => [
 
 /* ─── Componente ─────────────────────────────────────────── */
 const ProductManager = () => {
-  const { products, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } =
+  const { products, pagination, isLoading, error, fetchProducts, createProduct, updateProduct, deleteProduct } =
     useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
   const { toBs } = useCurrencyStore();
@@ -116,16 +116,16 @@ const ProductManager = () => {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [currentPage, setCurrentPage]   = useState(1);
 
-  const totalPages      = Math.ceil(products.length / ITEMS_PER_PAGE);
-  const currentProducts = products.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages      = pagination?.totalPages || 1;
+  const currentProducts = products;
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(currentPage, ITEMS_PER_PAGE);
+  }, [fetchProducts, currentPage]);
+
+  useEffect(() => {
     fetchCategories();
-  }, [fetchProducts, fetchCategories]);
+  }, [fetchCategories]);
 
   /* ── Handlers ── */
   const handleChange = (e) => {

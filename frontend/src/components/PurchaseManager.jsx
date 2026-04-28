@@ -27,6 +27,7 @@ import Button        from "./atoms/Button";
 import Modal         from "./molecules/Modal";
 import SectionHeader from "./molecules/SectionHeader";
 import BarcodeScanner from "./BarcodeScanner";
+import Pagination from "./molecules/Pagination";
 
 /* ─── Constantes ─────────────────────────────────────────── */
 const ITEMS_PER_PAGE    = 10;
@@ -361,7 +362,7 @@ const PurchaseDetailView = ({ purchase, onBack, onPay }) => {
 
 /* ─── Componente principal ───────────────────────────────── */
 const PurchaseManager = () => {
-  const { purchases, isLoading, error, fetchPurchases, createPurchase, fetchPurchaseById, payPurchase } = usePurchaseStore();
+  const { purchases, pagination, isLoading, error, fetchPurchases, createPurchase, fetchPurchaseById, payPurchase } = usePurchaseStore();
   const { products, fetchProducts, fetchProductByBarcode } = useProductStore();
   const { user } = useAuthStore();
 
@@ -370,13 +371,16 @@ const PurchaseManager = () => {
   const [isScannerOpen,  setIsScannerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Todas");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Form state
   const [supplier, setSupplier] = useState("");
   const [dueDate,  setDueDate]  = useState("");
   const [items,    setItems]    = useState(EMPTY_ITEMS_LIST);
 
-  useEffect(() => { fetchPurchases(); fetchProducts(); }, [fetchPurchases, fetchProducts]);
+  useEffect(() => { fetchPurchases(currentPage, 10); fetchProducts(); }, [fetchPurchases, fetchProducts, currentPage]);
+
+  const totalPages = pagination?.totalPages || 1;
 
   /* ── Filtros y Búsqueda ── */
   const filteredPurchases = useMemo(() => {
@@ -590,13 +594,20 @@ const PurchaseManager = () => {
                 <p className="text-gray-500">Intenta cambiar los filtros o registra una nueva entrada.</p>
               </div>
             ) : (
-              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <AnimatePresence>
-                  {filteredPurchases.map((purchase) => (
-                    <PurchaseCard key={purchase._id} purchase={purchase} onClick={handleViewDetail} />
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+              <>
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+                  <AnimatePresence>
+                    {filteredPurchases.map((purchase) => (
+                      <PurchaseCard key={purchase._id} purchase={purchase} onClick={handleViewDetail} />
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+                {totalPages > 1 && (
+                  <div className="mt-8 rounded-2xl overflow-hidden border border-white/5">
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         )}

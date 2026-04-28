@@ -7,15 +7,20 @@ axios.defaults.withCredentials = true;
 
 export const useCategoryStore = create((set) => ({
   categories: [],
+  pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
   isLoading: false,
   error: null,
 
-  fetchCategories: async () => {
+  fetchCategories: async (page = 1, limit = 10) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(API_URL);
-      // Asumiendo que el backend devuelve { success: true, categories: [...] }
-      set({ categories: response.data.categories || response.data, isLoading: false });
+      const response = await axios.get(`${API_URL}?page=${page}&limit=${limit}`);
+      const payload = response.data;
+      set({ 
+        categories: payload.data || payload.categories || (Array.isArray(payload) ? payload : []),
+        pagination: payload.pagination || { total: 0, page, limit, totalPages: 1 },
+        isLoading: false 
+      });
     } catch (error) {
       set({ error: error.response?.data?.message || "Error al obtener las categorías", isLoading: false });
     }

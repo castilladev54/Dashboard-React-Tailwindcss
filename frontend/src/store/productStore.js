@@ -7,14 +7,20 @@ axios.defaults.withCredentials = true;
 
 export const useProductStore = create((set) => ({
   products: [],
+  pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
   isLoading: false,
   error: null,
 
-  fetchProducts: async () => {
+  fetchProducts: async (page = 1, limit = 10) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(API_URL);
-      set({ products: response.data.products || response.data, isLoading: false });
+      const response = await axios.get(`${API_URL}?page=${page}&limit=${limit}`);
+      const payload = response.data;
+      set({ 
+        products: payload.data || payload.products || (Array.isArray(payload) ? payload : []),
+        pagination: payload.pagination || { total: 0, page, limit, totalPages: 1 },
+        isLoading: false 
+      });
     } catch (error) {
       set({ error: error.response?.data?.message || "Error al obtener los productos", isLoading: false });
     }
