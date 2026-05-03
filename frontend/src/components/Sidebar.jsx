@@ -5,6 +5,7 @@ import {
   Bell, Settings, LogOut, Image as ImageIcon, Mic, UserPlus, ShoppingBag
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import PermissionGuard from './PermissionGuard';
 
 const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
   const { user, logout } = useAuthStore();
@@ -90,15 +91,17 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
             </li>
 
             {/* Ganancia */}
-            <li>
-              <button
-                onClick={() => setActiveTab("analytics")}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'analytics' ? 'bg-white/10 text-orange-400 font-medium' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
-              >
-                <TrendingUp size={22} className="shrink-0" />
-                {isOpen && <span className="font-medium whitespace-nowrap">Ganancia</span>}
-              </button>
-            </li>
+            <PermissionGuard requiredPermission="finances_access">
+              <li>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'analytics' ? 'bg-white/10 text-orange-400 font-medium' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
+                >
+                  <TrendingUp size={22} className="shrink-0" />
+                  {isOpen && <span className="font-medium whitespace-nowrap">Ganancia</span>}
+                </button>
+              </li>
+            </PermissionGuard>
 
             {/* Tienda */}
             <li>
@@ -119,44 +122,63 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }) => {
               </button>
               {isOpen && openDropdowns['tienda'] && (
                 <ul className="mt-2 ml-4 pl-4 border-l border-white/10 space-y-2">
-                  <li>
-                    <button
-                      onClick={() => setActiveTab("products")}
-                      className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'products' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
-                    >
-                      Productos
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => setActiveTab("categories")}
-                      className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'categories' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
-                    >
-                      Categorías
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => setActiveTab("sales")}
-                      className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'sales' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
-                    >
-                      Punto de Venta
-                    </button>
-                  </li>
+                  <PermissionGuard requiredPermission="inventory_access">
+                    <li>
+                      <button
+                        onClick={() => setActiveTab("products")}
+                        className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'products' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
+                      >
+                        Productos
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => setActiveTab("categories")}
+                        className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'categories' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
+                      >
+                        Categorías
+                      </button>
+                    </li>
+                  </PermissionGuard>
+                  <PermissionGuard requiredPermission="pos_access">
+                    <li>
+                      <button
+                        onClick={() => setActiveTab("sales")}
+                        className={`w-full text-left block py-2 px-3 rounded-lg hover:bg-white/10 text-sm transition-colors ${activeTab === 'sales' ? 'bg-white/10 text-orange-400 font-medium' : ''}`}
+                      >
+                        Punto de Venta
+                      </button>
+                    </li>
+                  </PermissionGuard>
                 </ul>
               )}
             </li>
 
             {/* Compras (Entradas) - Módulo Destacado */}
-            <li>
-              <button
-                onClick={() => setActiveTab("purchases")}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'purchases' ? 'bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
-              >
-                <ShoppingBag size={22} className="shrink-0" />
-                {isOpen && <span className="whitespace-nowrap">Registro de Compras</span>}
-              </button>
-            </li>
+            <PermissionGuard requiredPermission="purchases_access">
+              <li>
+                <button
+                  onClick={() => setActiveTab("purchases")}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'purchases' ? 'bg-orange-500/10 border border-orange-500/20 text-orange-500 font-bold' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
+                >
+                  <ShoppingBag size={22} className="shrink-0" />
+                  {isOpen && <span className="whitespace-nowrap">Registro de Compras</span>}
+                </button>
+              </li>
+            </PermissionGuard>
+
+            {/* Personal (RBAC) */}
+            <PermissionGuard requiredPermission="staff_management">
+              <li>
+                <button
+                  onClick={() => setActiveTab("staff")}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${activeTab === 'staff' ? 'bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold' : isDarkMode ? 'hover:bg-white/10' : 'hover:bg-gray-200'}`}
+                >
+                  <UserPlus size={22} className="shrink-0" />
+                  {isOpen && <span className="whitespace-nowrap">Personal</span>}
+                </button>
+              </li>
+            </PermissionGuard>
 
             {/* Admin (Solo si el rol es admin) */}
             {user?.role === "admin" && (

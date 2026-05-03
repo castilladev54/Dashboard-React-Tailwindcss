@@ -12,8 +12,10 @@ import PurchaseManager from "../components/PurchaseManager";
 import SalesManager from "../components/SalesManager";
 import AnalyticsManager from "../components/AnalyticsManager";
 import AdminUserCreator from "../components/AdminUserCreator";
+import StaffManager from "../components/StaffManager";
+import PermissionGuard from "../components/PermissionGuard";
 import { AiChatWindow } from "../components/organisms/AiChatWindow";
-import { Bot, Sparkles } from "lucide-react";
+import { Bot, Sparkles, ShieldAlert } from "lucide-react";
 const DashboardPage = () => {
   const { user, logout } = useAuthStore();
   const [isOpen, setIsOpen] = useState(true);
@@ -27,28 +29,63 @@ const DashboardPage = () => {
     <>
       <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className={`transition-all duration-300 w-full pt-20 md:pt-10 min-h-screen border-t-0 ${isOpen ? 'md:pl-64' : 'md:pl-20'} pl-0`}>
-        {activeTab === "categories" && <CategoryManager />}
-        {activeTab === "products" && <ProductManager />}
-        {activeTab === "purchases" && <PurchaseManager />}
-        {activeTab === "sales" && <SalesManager />}
-        {activeTab === "analytics" && <AnalyticsManager />}
+        {activeTab === "categories" && (
+          <PermissionGuard requiredPermission="inventory_access" fallback={<AccessDenied />}>
+            <CategoryManager />
+          </PermissionGuard>
+        )}
+        {activeTab === "products" && (
+          <PermissionGuard requiredPermission="inventory_access" fallback={<AccessDenied />}>
+            <ProductManager />
+          </PermissionGuard>
+        )}
+        {activeTab === "purchases" && (
+          <PermissionGuard requiredPermission="purchases_access" fallback={<AccessDenied />}>
+            <PurchaseManager />
+          </PermissionGuard>
+        )}
+        {activeTab === "sales" && (
+          <PermissionGuard requiredPermission="pos_access" fallback={<AccessDenied />}>
+            <SalesManager />
+          </PermissionGuard>
+        )}
+        {activeTab === "analytics" && (
+          <PermissionGuard requiredPermission="finances_access" fallback={<AccessDenied />}>
+            <AnalyticsManager />
+          </PermissionGuard>
+        )}
+        {activeTab === "staff" && (
+          <PermissionGuard requiredPermission="staff_management" fallback={<AccessDenied />}>
+            <StaffManager />
+          </PermissionGuard>
+        )}
         {activeTab === "adminCreateUser" && <AdminUserCreator />}
       </main>
 
-      {/* Floating AI Button */}
-      {!isChatOpen && (
-        <button
-          onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-40 p-4 bg-gradient-to-r from-emerald-500 to-green-600 border border-green-400 text-white rounded-full shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:scale-110 hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all duration-300 flex items-center justify-center group"
-        >
-          <Bot className="w-8 h-8 group-hover:animate-pulse" />
-          <Sparkles className="absolute top-1 right-1 w-4 h-4 text-emerald-100" />
-        </button>
-      )}
+      {/* Floating AI Button (Protected) */}
+      <PermissionGuard requiredPermission="finances_access">
+        {!isChatOpen && (
+          <button
+            onClick={() => setIsChatOpen(true)}
+            className="fixed bottom-6 right-6 z-40 p-4 bg-gradient-to-r from-emerald-500 to-green-600 border border-green-400 text-white rounded-full shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:scale-110 hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all duration-300 flex items-center justify-center group"
+          >
+            <Bot className="w-8 h-8 group-hover:animate-pulse" />
+            <Sparkles className="absolute top-1 right-1 w-4 h-4 text-emerald-100" />
+          </button>
+        )}
 
-      {/* AI Chat Window */}
-      {isChatOpen && <AiChatWindow onClose={() => setIsChatOpen(false)} />}
+        {/* AI Chat Window */}
+        {isChatOpen && <AiChatWindow onClose={() => setIsChatOpen(false)} />}
+      </PermissionGuard>
     </>
   );
 };
+
+const AccessDenied = () => (
+  <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
+    <ShieldAlert size={80} className="text-red-500/50 mb-6" />
+    <h2 className="text-3xl font-bold text-white mb-2">Acceso Denegado</h2>
+    <p className="text-gray-400 max-w-md">No tienes los permisos necesarios para ver este módulo. Solicita acceso a tu administrador.</p>
+  </div>
+);
 export default DashboardPage;

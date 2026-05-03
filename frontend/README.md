@@ -1,4 +1,4 @@
-# 🛒 CastillaWeb - Sistema POS e Inventario (SaaS Frontend v2.0)
+# 🛒 CastillaWeb - Sistema POS e Inventario (SaaS Frontend)
 
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
@@ -6,100 +6,98 @@
 ![Zustand](https://img.shields.io/badge/zustand-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![Framer Motion](https://img.shields.io/badge/Framer--Motion-black?style=for-the-badge&logo=framer&logoColor=blue)
 
-CastillaWeb es el **Frontend** de una plataforma de inventario y punto de venta integral tipo SaaS (Software as a Service). Está diseñado para proporcionar la mejor experiencia de usuario (UX) mediante animaciones fluidas, un modo oscuro espectacular, y robustas capacidades para manejar comercios corporativos (desde tiendas pequeñas hasta supermercados que registran ventas fraccionales a granel).
+CastillaWeb es el **Frontend** de una plataforma de inventario y punto de venta integral tipo SaaS (Software as a Service). Está diseñado para proporcionar la mejor experiencia de usuario (UX) mediante animaciones fluidas, un modo oscuro moderno y robustas capacidades para manejar comercios corporativos (desde tiendas pequeñas hasta supermercados que registran ventas fraccionales a granel).
 
-## ✨ Características Principales (Actualización v2.0)
+## ✨ Características Principales
 
-*   **🛡️ Sistema SaaS Cerrado (B2B):** El acceso público y el autorregistro están desactivados por seguridad. Las cuentas son generadas exclusivamente y entregadas centralizadamente por el administrador de la plataforma mediante un panel interno (`AdminUserCreator.jsx`).
-*   **⏳ Interceptor de Suscripciones (7 Días):** Integración de un interceptor de red global (`Axios`) que captura cortes de caducidad provenientes del servidor de manera instantánea. Si un plan o trial concluye, el framework detiene de inmediato el parseo de vistas y encierra toda la aplicación detrás del portal ineludible **`SubscriptionExpiredPage`**.
-*   **⚖️ Ventas y Stock a Granel (Inventario Multiescala):** Total soporte para manejo y fraccionamiento estricto de productos por diferentes magnitudes (Unidades, Kilogramos (kg), Litros (litro) o Metros (metro)). Los formularios pueden procesar de manera natural entradas en centésimas (`0.01`).
-*   **📊 Panel Analítico Inteligente:** Observación en tiempo real de márgenes de ganancias, productos más vendidos y recuentos de utilidades.
-*   **💸 Punto de Venta Dinámico (TPV/POS):** Tasa de cambio editable de manera asíncrona directamente desde el layout de ventas para transformar visualizaciones entre USD y moneda local en cuestión de décimas de segundo, sin recargar páginas. 
-*   **🌙 Interfaz Ultra Premium y Moderna:** Diseño fluido y responsivo que aprovecha toda la modernidad del "glassmorphism", tonalidades neón sobre fondos obsidianos (Amber/Orange highlight), completamente potenciado por TailwindCSS y Framer Motion.
-*   **🧬 Arquitectura Atomic Design:** Reciente refactorización profunda para estructurar la UI en Átomos, Moléculas y Organismos, garantizando máxima reutilización de código y escalabilidad.
+*   **🛡️ Sistema SaaS Seguro:** Cuentas gestionadas internamente mediante un panel administrativo (`AdminUserCreator`). Incluye flujos robustos de autenticación (Login, Verificación de Email, Recuperación de Contraseña).
+*   **⏳ Gestión de Suscripciones:** Integración de un interceptor de red global (`Axios`) que captura cortes de caducidad. Si un plan o trial concluye, la aplicación redirige a la página **`SubscriptionExpiredPage`**.
+*   **⚖️ Ventas y Stock a Granel (Inventario Multiescala):** Soporte total para manejo y fraccionamiento estricto de productos (Unidades, Kilogramos, Litros o Metros).
+*   **📊 Panel Analítico Inteligente:** Observación de métricas a través de `recharts` para ventas, productos, compras y ganancias.
+*   **💸 Punto de Venta Dinámico (TPV/POS):** Interfaz fluida para la gestión de ventas y abonos. Soporte para lectores de código de barras (`html5-qrcode`).
+*   **🌙 Interfaz Ultra Premium:** Diseño moderno "glassmorphism", completamente potenciado por TailwindCSS v4 y animado con Framer Motion.
+*   **🧬 Arquitectura Atomic Design:** UI estructurada en Átomos, Moléculas y Organismos, garantizando máxima reutilización de código y escalabilidad.
 
 ## 🛠️ Tecnologías y Ecosistema
 
-El frontend emplea un abanico modular de herramientas vanguardistas enfocadas en proveer solidez e instanteneidad al cliente interaccionando con los balances:
+El frontend emplea un stack de herramientas de vanguardia enfocadas en rendimiento y escalabilidad:
 
-*   **[React 18](https://react.dev/) + [Vite](https://vitejs.dev/):** Configuración instantánea y HMR hiperveloz.
-*   **[Tailwind CSS v3](https://tailwindcss.com/):** Clases utilitarias que permiten que toda la interfaz haya sido moldeada para verse de categoría *Enterprise*.
-*   **[Framer Motion](https://www.framer.com/motion/):** Motor declarativo utilizado en los apartados transicionales, modales flotantes e inputs interactivos en todo el dashboard.
-*   **[Zustand](https://zustand-demo.pmnd.rs/):** Manejo global del estado asincrónico separando lógica de la interfaz eficientemente (con stores independientes para `Auth`, `Productos`, `Ventas`, `Compras`, `Ajustes` y `Tasa de Cambio`).
-*   **[Axios](https://axios-http.com/):** Módulo de consultas backend adaptado para llevar siempre las galletas (`withCredentials: true`) en todos sus procesos bajo los scopes de API interna.
-*   **[React Router DOM](https://reactrouter.com/):** Orquestador de vistas (SPA layout).
-*   **[Lucide React](https://lucide.dev/):** Tipografía e iconografía semántica de trazos limpios.
+*   **[React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/):** Rendering ultrarrápido y Hot Module Replacement (HMR).
+*   **[Tailwind CSS v4](https://tailwindcss.com/):** Motor de utilidades CSS moderno (`@tailwindcss/vite`) para construir diseños *Enterprise* a gran velocidad.
+*   **[Framer Motion 12](https://www.framer.com/motion/):** Motor declarativo utilizado en transiciones, modales y animaciones del dashboard.
+*   **[Zustand 5](https://zustand-demo.pmnd.rs/):** Manejo global del estado asincrónico (con stores independientes para `Auth`, `Productos`, `Ventas`, `Compras`, etc.).
+*   **[Axios](https://axios-http.com/):** Cliente HTTP configurado para enviar credenciales (`withCredentials: true`) en todos sus procesos.
+*   **[React Router DOM 7](https://reactrouter.com/):** Orquestador de enrutamiento y navegación (SPA).
+*   **[Lucide React](https://lucide.dev/):** Tipografía e iconografía semántica moderna.
+*   **[Recharts](https://recharts.org/):** Librería para visualización de datos y analíticas interactivas.
 
 ## 🚀 Instalación Local / Entorno de Desarrollo
 
-Para poner a marchar la aplicación en desarrollo, sigue esta guía básica:
+Para iniciar la aplicación en desarrollo, sigue esta guía:
 
-1. **Abriendo la raíz en terminal:**
+1. **Abriendo la terminal en la carpeta frontend:**
    ```bash
    cd InventarioCrud/frontend
    ```
 
-2. **Instalación de Módulos (NPM/Yarn):**
+2. **Instalación de Dependencias:**
    ```bash
    npm install
    ```
 
-3. **Ejecución del Motor (Vite Server):**
-   *Importante: Verifica que en paralelo tu Backend corriendo bajo Node/Express en el puerto `:5000` se encuentre encendido, o de lo contrario el Frontend no podrá efectuar intercesiones API ni autenticarte.*
+3. **Ejecución del Servidor de Desarrollo:**
+   *Importante: Verifica que tu Backend (Node/Express) esté corriendo en el puerto correspondiente (usualmente `:5000`) para que el Frontend pueda consumir la API.*
    ```bash
    npm run dev
    ```
-   *Accede ahora a `http://localhost:5173` desde cualquier navegador para disfrutar todo el entorno CastillaWeb*.
+   *Accede a `http://localhost:5173` desde tu navegador.*
 
-## 📁 Árbol e Ingeniería de Carpetas (Atomic Design)
+## 📁 Estructura del Proyecto (Atomic Design)
 
-La estructura del proyecto fue refactorizada recientemente para seguir los principios de **Atomic Design**, creando una base de código mucho más mantenible y limpia, reduciendo el tamaño de las vistas principales en casi un 50%.
+La estructura sigue un enfoque modular y escalable para separar lógica, presentación y configuración:
 
 ```text
 frontend/
 ├── src/
+│   ├── assets/                # Recursos estáticos (imágenes, fuentes)
 │   ├── components/            # Sistema de Componentes UI (Atomic Design)
-│   │   ├── atoms/             # Componentes indivisibles (Button, Badge, Input, Spinner, Label)
-│   │   ├── molecules/         # Agrupaciones simples (FormField, SectionHeader, ConfirmDialog, Modal, StatCard)
-│   │   ├── organisms/         # Secciones funcionales complejas (DataTable)
+│   │   ├── atoms/             # Componentes base (Button, Badge, Input, Spinner)
+│   │   ├── molecules/         # Agrupaciones simples (FormField, Modal, StatCard)
+│   │   ├── organisms/         # Secciones funcionales (DataTable)
 │   │   │
-│   │   └── ...Vistas Principales (Managers)...
+│   │   └── ... Vistas Principales (Managers) ...
 │   │       ├── AdminUserCreator.jsx    # Portal privado de alta de usuarios
 │   │       ├── ProductManager.jsx      # Panel de CRUD, Inventarios y Mapeo
-│   │       ├── SalesManager.jsx        # Punto de Venta POS (POS fullscreen, Carrito, Catálogo, Scanner)
-│   │       ├── PurchaseManager.jsx     # Modulo de Entrada y Restock a Granel
+│   │       ├── SalesManager.jsx        # Punto de Venta POS 
+│   │       ├── PurchaseManager.jsx     # Módulo de Entradas y Restock
 │   │       ├── CategoryManager.jsx     # Gestor de taxonomías
-│   │       ├── AdjustmentManager.jsx   # Kárdex y auditorías manuales (Mermas, Daños, Correcciones)
-│   │       └── AnalyticsManager.jsx    # Panel de métricas y gráficas (Recharts)
+│   │       ├── StaffManager.jsx        # Gestión del personal/empleados
+│   │       ├── AnalyticsManager.jsx    # Panel de métricas y gráficas
+│   │       └── BarcodeScanner.jsx      # Escáner de código de barras
 │   │
-│   ├── pages/                 # Controladores Máster 
-│   │   ├── HomePage.jsx            # Landing / Vitrina ultra-modernizada con Hero Animations
-│   │   ├── DashboardPage.jsx       # Contexto Privado Maestro y Enrutador del Panel Interno
-│   │   ├── SubscriptionExpiredPage # Redirección si expire == true
-│   │   └── LoginPage.jsx           # Accesibilidad cerrada para usuarios clientes/admins
+│   ├── pages/                 # Controladores Máster (Vistas completas)
+│   │   ├── HomePage.jsx            # Landing / Vitrina principal
+│   │   ├── DashboardPage.jsx       # Contexto Privado Maestro y Panel
+│   │   ├── LoginPage.jsx           # Autenticación principal
+│   │   ├── EmailVerificationPage.jsx # Verificación de correos
+│   │   ├── ForgotPasswordPage.jsx  # Recuperación de contraseña (solicitud)
+│   │   ├── ResetPasswordPage.jsx   # Recuperación de contraseña (reinicio)
+│   │   └── SubscriptionExpiredPage.jsx # Redirección si la cuenta expiró
 │   │
 │   ├── store/                 # Lógica Pura (Módulos Zustand)
-│   │   ├── authStore.js            # Accesos, Logouts, e interceptores axios 403.
-│   │   ├── productStore.js         # Reflejo del maestro del Backend
-│   │   ├── saleStore.js            # Ventas y reportes
-│   │   └── ...
-│   │
-│   ├── styles/                # Tokens de diseño compartidos
-│   ├── utils/                 # Funciones matemáticas o helpers
-│   ├── App.jsx                # Router DOM Principal y Wrappers Protected/Unprotected
-│   └── main.jsx               # Entry Point del framework de React UI.
+│   ├── styles/                # Tokens de diseño y estilos globales
+│   ├── utils/                 # Funciones de ayuda (helpers)
+│   ├── constants/             # Variables constantes de la app
+│   ├── App.jsx                # Router DOM Principal y Wrappers
+│   └── main.jsx               # Entry Point de la aplicación React
 ├── package.json
-└── tailwind.config.js
+└── vite.config.js             # (o similar, configuración de vite)
 ```
 
-## 🧩 Patrones Nativos Adoptados (Documentación)
+## 🧩 Convenciones y Patrones
 
-1. **Atomic Design & DRY:** Todos los componentes monolíticos (`SalesManager`, `PurchaseManager`, etc.) delegan la presentación de tablas, modales destructivos y formularios a la taxonomía atómica (`DataTable`, `ConfirmDialog`, `FormField`).
-2. **Registro Centralizado:** El registro público vía `/signup` de usuarios es **inexistente**. El enrolamiento recae 100% sobre `AdminUserCreator.jsx` para evitar abusos B2C.
-3. **Punto Flotante a Granel:** Todo cálculo e imputación en el TPV utiliza `min="0.01" step="0.01"`, permitiendo a las cajas marcar artículos pesados en balanzas garantizando el pase flotante (ParseFloat) hacia el middleware final.
-4. **Semántica HTML5:** Se usan etiquetas nativas iterativas (`<section>`, `<fieldset>`, `<article>`, `<output>`, etiquetas `aria-*`) en detrimento de los genéricos `<div>`, garantizando accesibilidad (a11y) y limpieza de árbol DOM.
-5. **Shortcuts & UX TPV:** El `SalesManager` incorpora un potente listener nativo para que los cajeros puedan orquestar el Punto de Venta con atajos de teclado completos (F2, F3, F4, Scanner Pasivo, etc) sin utilizar el mouse.
-6. **Listener de Expiración:** Interceptores universales responden de agilidad a mermas autoritarias (periodo de pruebas extinto), aislando al aplicativo y mostrando una pantalla de suspensión de servicio instintiva.
-
----
-*Escalable, Responsivo y Extremadamente Estético. Todo diseñado para impresionar.*
+1. **Atomic Design:** Separación clara entre componentes de presentación reutilizables (Átomos, Moléculas) y componentes con lógica compleja (Organismos, Managers).
+2. **Semántica HTML5:** Uso de etiquetas nativas iterativas (`<section>`, `<article>`, `<dialog>`) en detrimento de los genéricos `<div>`, garantizando accesibilidad y limpieza en el DOM.
+3. **Manejo de Estado Centralizado:** Zustand se encarga de la comunicación con la API y el estado global, permitiendo que los componentes se suscriban únicamente a los datos que necesitan.
+4. **Flujos de Autenticación Modernos:** Gestión completa de tokens, correos de verificación y recuperación de accesos a través de vistas dedicadas.
+5. **Precisión Numérica:** Todo cálculo en el punto de venta y en el sistema de compras utiliza estándares de formato numérico (`min="0.01" step="0.01"`) para manejar de manera precisa el inventario fraccionado.
